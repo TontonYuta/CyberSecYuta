@@ -1,0 +1,6 @@
+{
+  "name": "CyberSec Studio - Hands-on Visual Lab for Security Engineers",
+  "description": "Interactive cybersecurity learning workbench featuring exploit sandboxes, packet inspection, CTF privilege escalation terminal, SOC log matrix, and a 90-day mastery roadmap.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
