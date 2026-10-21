@@ -391,22 +391,22 @@ export const SandboxTab: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 w-full h-full min-h-0 overflow-hidden flex flex-col bg-[#09090b]">
+    <div className="flex-1 w-full h-full min-h-0 overflow-hidden flex flex-col bg-[#0b0f19]">
       {/* Mobile Sub-Navigation Bar */}
-      <div className="lg:hidden px-2.5 py-1.5 bg-[#121215] border-b border-[#27272a] flex items-center justify-between shrink-0">
-        <div className="flex items-center p-0.5 bg-black border border-neutral-800 rounded-lg w-full">
+      <div className="lg:hidden px-3 py-2 bg-[#0e1424] border-b border-[#1e293b] flex items-center justify-between shrink-0 shadow-sm">
+        <div className="flex items-center p-1 bg-slate-950/80 border border-slate-800 rounded-xl w-full gap-1">
           <button
             onClick={() => {
               sound.playClick();
               setMobileTab('code');
             }}
-            className={`flex-1 py-1.5 px-2 text-xs font-semibold rounded-md flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+            className={`flex-1 py-2 px-2.5 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
               mobileTab === 'code'
-                ? 'bg-neutral-800 text-white shadow-sm'
-                : 'text-neutral-400 hover:text-white'
+                ? 'bg-blue-600/30 text-blue-200 border border-blue-500/50 shadow-sm'
+                : 'text-slate-400 hover:text-white'
             }`}
           >
-            <FileCode className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+            <FileCode className="w-4 h-4 text-blue-400 shrink-0" />
             <span>Mã Nguồn & Lỗ Hổng</span>
           </button>
 
@@ -415,13 +415,13 @@ export const SandboxTab: React.FC = () => {
               sound.playClick();
               setMobileTab('target');
             }}
-            className={`flex-1 py-1.5 px-2 text-xs font-semibold rounded-md flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+            className={`flex-1 py-2 px-2.5 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
               mobileTab === 'target'
-                ? 'bg-red-950/80 text-red-200 border border-red-600/50 shadow-sm'
-                : 'text-neutral-400 hover:text-white'
+                ? 'bg-red-950/80 text-red-200 border border-red-500/60 shadow-sm'
+                : 'text-slate-400 hover:text-white'
             }`}
           >
-            <Globe className="w-3.5 h-3.5 text-red-400 shrink-0" />
+            <Globe className="w-4 h-4 text-red-400 shrink-0" />
             <span>Mục Tiêu & Khai Thác</span>
           </button>
         </div>
@@ -430,566 +430,575 @@ export const SandboxTab: React.FC = () => {
       <div className="flex-1 w-full min-h-0 overflow-hidden flex flex-col lg:flex-row">
         {/* LEFT PANE: Lab Selector, Security Mode Switch & Source Code Inspector */}
         <div
-          className={`w-full lg:w-[48%] h-full flex flex-col border-r border-[#27272a] bg-[#0c0c0e] overflow-hidden ${
+          className={`w-full lg:w-[48%] h-full flex flex-col border-r border-[#1e293b] bg-[#0c1222] overflow-hidden ${
             mobileTab === 'code' ? 'flex' : 'hidden lg:flex'
           }`}
         >
-        {/* Sub-header 1: Vulnerability Selector Strip */}
-        <div className="p-3 border-b border-[#27272a] bg-[#121215]">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">
-              Chọn Lỗ Hổng Thực Hành (Scenario)
-            </span>
-            <span className="text-[11px] font-mono text-neutral-500">
-              {currentScenario.cwe.split(':')[0]}
-            </span>
-          </div>
-
-          <div className="grid grid-cols-2 gap-1.5">
-            {SCENARIOS.map((sc) => {
-              const isSelected = sc.id === selectedScenarioId;
-              return (
-                <button
-                  key={sc.id}
-                  onClick={() => setSelectedScenarioId(sc.id)}
-                  className={`px-2.5 py-2 text-left rounded border transition-all text-xs flex items-center justify-between ${
-                    isSelected
-                      ? 'bg-neutral-800 border-neutral-600 text-white shadow-sm'
-                      : 'bg-neutral-900/60 border-neutral-800/80 text-neutral-400 hover:text-neutral-200 hover:border-neutral-700'
-                  }`}
-                >
-                  <div className="flex items-center gap-2 truncate">
-                    <span className="font-mono text-[10px] text-neutral-400 font-semibold">
-                      [{sc.index}]
-                    </span>
-                    <span className="truncate font-medium">{sc.title.split('(')[0]}</span>
-                  </div>
-                  <span
-                    className={`text-[10px] font-mono shrink-0 px-1 rounded ${
-                      sc.severity === 'Critical'
-                        ? 'text-red-400 bg-red-950/40'
-                        : 'text-amber-400 bg-amber-950/40'
-                    }`}
-                  >
-                    {sc.severity}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Sub-header 2: Mode Switch Toggle: Vulnerable vs Patched */}
-        <div className="px-3 py-2.5 border-b border-[#27272a] bg-[#0f0f12] flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-medium text-neutral-300">Trạng thái mã nguồn:</span>
-          </div>
-
-          {/* Big Interactive Dual Toggle */}
-          <div className="flex items-center p-0.5 bg-neutral-950 border border-neutral-800 rounded-md">
-            <button
-              onClick={() => setSecurityMode('vulnerable')}
-              className={`flex items-center gap-1.5 px-3 py-1 rounded text-xs font-semibold transition-all ${
-                securityMode === 'vulnerable'
-                  ? 'bg-red-950/80 text-red-200 border border-red-600/50 shadow-sm'
-                  : 'text-neutral-500 hover:text-neutral-300'
-              }`}
-            >
-              <ShieldAlert className="w-3.5 h-3.5 text-red-500" />
-              <span>Có Lỗ Hổng (Vulnerable)</span>
-            </button>
-
-            <button
-              onClick={() => setSecurityMode('patched')}
-              className={`flex items-center gap-1.5 px-3 py-1 rounded text-xs font-semibold transition-all ${
-                securityMode === 'patched'
-                  ? 'bg-emerald-950/80 text-emerald-200 border border-emerald-600/50 shadow-sm'
-                  : 'text-neutral-500 hover:text-neutral-300'
-              }`}
-            >
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-              <span>Đã Vá An Toàn (Patched)</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Code Viewer Panel with syntax lines and vulnerability callout */}
-        <div className="flex-1 overflow-y-auto flex flex-col p-3">
-          <div className="flex items-center justify-between pb-2 text-xs text-neutral-400 border-b border-neutral-800/80 mb-2">
-            <div className="flex items-center gap-2">
-              <FileCode className="w-3.5 h-3.5 text-neutral-400" />
-              <span className="font-mono text-neutral-300">
-                {securityMode === 'vulnerable'
-                  ? currentScenario.vulnerableCode.filename
-                  : currentScenario.patchedCode.filename}
+          {/* Sub-header 1: Vulnerability Selector Strip */}
+          <div className="p-3 sm:p-3.5 border-b border-[#1e293b] bg-[#0e1628]">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-300">
+                Chọn Lỗ Hổng Thực Hành (OWASP Lab)
               </span>
-            </div>
-            <span
-              className={`text-[11px] font-mono font-medium ${
-                securityMode === 'vulnerable' ? 'text-red-400' : 'text-emerald-400'
-              }`}
-            >
-              {securityMode === 'vulnerable' ? '● Unsanitized Code' : '● Parameterized & Protected'}
-            </span>
-          </div>
-
-          {/* Syntax code block */}
-          <div className="bg-[#070709] border border-[#27272a] rounded font-mono text-[11px] leading-relaxed p-3 overflow-x-auto shadow-inner flex-1">
-            {securityMode === 'vulnerable'
-              ? currentScenario.vulnerableCode.lines.map((line, idx) => (
-                  <div
-                    key={idx}
-                    className={`flex items-start py-0.5 px-1 rounded ${
-                      line.isVulnerable
-                        ? 'bg-red-950/50 text-red-200 border-l-2 border-red-500 font-semibold'
-                        : 'text-neutral-300'
-                    }`}
-                  >
-                    <span className="w-6 shrink-0 select-none text-neutral-600 text-right pr-2 text-[10px]">
-                      {idx + 1}
-                    </span>
-                    <span className="whitespace-pre flex-1">{line.text || ' '}</span>
-                    {line.note && (
-                      <span className="text-[10px] text-neutral-500 italic ml-2 select-none shrink-0">
-                        # {line.note}
-                      </span>
-                    )}
-                  </div>
-                ))
-              : currentScenario.patchedCode.lines.map((line, idx) => (
-                  <div
-                    key={idx}
-                    className={`flex items-start py-0.5 px-1 rounded ${
-                      line.isPatched
-                        ? 'bg-emerald-950/50 text-emerald-200 border-l-2 border-emerald-500 font-semibold'
-                        : 'text-neutral-300'
-                    }`}
-                  >
-                    <span className="w-6 shrink-0 select-none text-neutral-600 text-right pr-2 text-[10px]">
-                      {idx + 1}
-                    </span>
-                    <span className="whitespace-pre flex-1">{line.text || ' '}</span>
-                    {line.note && (
-                      <span className="text-[10px] text-neutral-500 italic ml-2 select-none shrink-0">
-                        # {line.note}
-                      </span>
-                    )}
-                  </div>
-                ))}
-          </div>
-
-          {/* Vulnerability Explanation & Impact Footer */}
-          <div className="mt-3 p-2.5 rounded bg-[#121215] border border-[#27272a] text-xs text-neutral-300 shrink-0">
-            <div className="flex items-center gap-1.5 font-semibold text-neutral-200 mb-1">
-              <Info className="w-3.5 h-3.5 text-blue-400" />
-              <span>Cơ chế bảo mật & Nguyên lý:</span>
-            </div>
-            <p className="text-neutral-400 text-[11px] leading-relaxed">
-              {securityMode === 'vulnerable'
-                ? currentScenario.fullDesc
-                : currentScenario.defenseOverview}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* RIGHT PANE: Mock Target Browser Window, Quick Payloads & Exploit Result (52% on desktop) */}
-      <div
-        className={`w-full lg:w-[52%] h-full flex flex-col bg-[#09090b] overflow-hidden ${
-          mobileTab === 'target' ? 'flex' : 'hidden lg:flex'
-        }`}
-      >
-        {/* Quick Payload Toolbar */}
-        <div className="px-3 py-2 bg-[#121215] border-b border-[#27272a] flex items-center justify-between gap-2 overflow-x-auto shrink-0">
-          <div className="flex items-center gap-1.5 shrink-0 text-xs font-medium text-neutral-400">
-            <Zap className="w-3.5 h-3.5 text-amber-400" />
-            <span>Nạp Payload mẫu:</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            {currentScenario.payloads.map((pl) => (
-              <div key={pl.id} className="flex items-center shrink-0">
-                <button
-                  onClick={() => handleApplyPayload(pl.payload, pl.targetField)}
-                  className="px-2 py-1 text-[11px] font-mono bg-neutral-900 border border-neutral-700/80 hover:border-amber-500/60 hover:text-amber-200 text-neutral-300 rounded transition-colors whitespace-nowrap"
-                  title={pl.description}
-                >
-                  {pl.label}
-                </button>
-                <button
-                  onClick={() => handleCopyPayload(pl.payload, pl.id)}
-                  className="p-1 text-neutral-500 hover:text-neutral-300 ml-0.5"
-                  title="Copy payload"
-                >
-                  <Copy className="w-3 h-3" />
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Mock Browser Container */}
-        <div className="flex-1 flex flex-col m-3 rounded-lg border border-[#27272a] bg-[#121215] overflow-hidden shadow-2xl">
-          {/* Browser Chrome Header (Address bar, controls) */}
-          <div className="h-10 bg-[#16161a] border-b border-[#27272a] px-3 flex items-center gap-3 shrink-0 select-none">
-            {/* Traffic Lights dots */}
-            <div className="flex items-center gap-1.5">
-              <div className="w-2.5 h-2.5 rounded-full bg-red-500/80" />
-              <div className="w-2.5 h-2.5 rounded-full bg-amber-500/80" />
-              <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/80" />
-            </div>
-
-            {/* Back / Forward / Refresh controls */}
-            <div className="flex items-center gap-1 text-neutral-500">
-              <button
-                className="p-1 hover:text-neutral-300 rounded transition-colors"
-                title="Back"
-              >
-                <ArrowLeft className="w-3.5 h-3.5" />
-              </button>
-              <button
-                className="p-1 hover:text-neutral-300 rounded transition-colors"
-                title="Forward"
-              >
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-              <button
-                onClick={handleExecuteAttack}
-                className="p-1 hover:text-neutral-300 rounded transition-colors"
-                title="Reload"
-              >
-                <RotateCcw className="w-3.5 h-3.5" />
-              </button>
-            </div>
-
-            {/* URL Omnibox */}
-            <div className="flex-1 flex items-center bg-[#09090b] border border-neutral-800 rounded px-2.5 py-1 text-xs font-mono text-neutral-300 focus-within:border-neutral-600 transition-colors">
-              <Lock className="w-3 h-3 text-emerald-500 mr-1.5 shrink-0" />
-              <input
-                type="text"
-                value={urlInput}
-                onChange={(e) => setUrlInput(e.target.value)}
-                className="w-full bg-transparent outline-none text-neutral-200 text-xs"
-                placeholder={currentScenario.urlPlaceholder}
-              />
-            </div>
-          </div>
-
-          {/* Browser Viewport Content */}
-          <div className="flex-1 p-4 overflow-y-auto bg-[#0e0e11] flex flex-col">
-            {/* Target App Bar Banner */}
-            <div className="border-b border-neutral-800 pb-3 mb-4 flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-bold text-neutral-100 flex items-center gap-2">
-                  <Globe className="w-4 h-4 text-blue-400" />
-                  {currentScenario.mockAppContext.appTitle}
-                </h3>
-                <p className="text-[11px] text-neutral-400 mt-0.5">
-                  {currentScenario.mockAppContext.description}
-                </p>
-              </div>
-              <span className="text-[10px] font-mono text-neutral-500 border border-neutral-800 rounded px-2 py-0.5">
-                Target Host: {currentScenario.mockAppContext.serverHost}
+              <span className="text-xs font-mono text-emerald-400 font-bold bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-800">
+                {currentScenario.cwe.split(':')[0]}
               </span>
             </div>
 
-            {/* SCENARIO 1: SQL Injection Login Mock Form */}
-            {selectedScenarioId === 'sqli' && (
-              <div className="max-w-md mx-auto w-full p-4 rounded-md border border-neutral-800 bg-[#141418] my-auto">
-                <div className="text-center mb-4">
-                  <h4 className="text-sm font-semibold text-neutral-200">
-                    ACME Enterprise Single Sign-On
-                  </h4>
-                  <p className="text-xs text-neutral-400 mt-1">
-                    Cổng đăng nhập hệ thống thông tin nhân sự và cơ sở dữ liệu
-                  </p>
-                </div>
-
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-xs font-medium text-neutral-300 mb-1">
-                      Tên người dùng (Username / SQL injection point)
-                    </label>
-                    <input
-                      type="text"
-                      value={formInputs.username}
-                      onChange={(e) =>
-                        setFormInputs((prev) => ({ ...prev, username: e.target.value }))
-                      }
-                      placeholder="admin or admin' --"
-                      className="w-full px-3 py-1.5 bg-[#09090b] border border-neutral-700 rounded font-mono text-xs text-neutral-200 focus:outline-none focus:border-red-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-medium text-neutral-300 mb-1">
-                      Mật khẩu (Password)
-                    </label>
-                    <input
-                      type="password"
-                      value={formInputs.password}
-                      onChange={(e) =>
-                        setFormInputs((prev) => ({ ...prev, password: e.target.value }))
-                      }
-                      placeholder="••••••••••••"
-                      className="w-full px-3 py-1.5 bg-[#09090b] border border-neutral-700 rounded font-mono text-xs text-neutral-200 focus:outline-none focus:border-neutral-500"
-                    />
-                  </div>
-
+            <div className="grid grid-cols-2 gap-2">
+              {SCENARIOS.map((sc) => {
+                const isSelected = sc.id === selectedScenarioId;
+                return (
                   <button
-                    onClick={handleExecuteAttack}
-                    disabled={isLoading}
-                    className="w-full py-2 px-4 mt-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded text-xs transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                    key={sc.id}
+                    onClick={() => {
+                      sound.playClick();
+                      setSelectedScenarioId(sc.id);
+                    }}
+                    className={`p-2.5 text-left rounded-xl border text-xs sm:text-sm transition-all flex items-center justify-between gap-2 cursor-pointer min-h-[46px] ${
+                      isSelected
+                        ? 'bg-blue-600/20 border-blue-500 text-white shadow-md shadow-blue-950/50 ring-1 ring-blue-500/40'
+                        : 'bg-slate-900/80 border-slate-800 text-slate-300 hover:text-white hover:border-slate-700'
+                    }`}
                   >
-                    {isLoading ? (
-                      <span>Đang xác thực truy vấn SQL...</span>
-                    ) : (
-                      <>
-                        <Zap className="w-3.5 h-3.5" />
-                        <span>Gửi Yêu Cầu Đăng Nhập (Execute Query)</span>
-                      </>
-                    )}
+                    <div className="flex items-center gap-1.5 truncate">
+                      <span className="font-mono text-xs text-blue-400 font-bold shrink-0">
+                        [{sc.index}]
+                      </span>
+                      <span className="truncate font-bold text-slate-100">{sc.title.split('(')[0]}</span>
+                    </div>
+                    <span
+                      className={`text-[10px] font-mono shrink-0 px-1.5 py-0.5 rounded-md font-bold ${
+                        sc.severity === 'Critical'
+                          ? 'text-red-300 bg-red-950/80 border border-red-800'
+                          : 'text-amber-300 bg-amber-950/80 border border-amber-800'
+                      }`}
+                    >
+                      {sc.severity}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Sub-header 2: Mode Switch Toggle: Vulnerable vs Patched */}
+          <div className="px-3 sm:px-3.5 py-2.5 border-b border-[#1e293b] bg-[#0c1426] flex items-center justify-between flex-wrap gap-2">
+            <span className="text-xs font-bold text-slate-200">Trạng thái mã nguồn:</span>
+
+            {/* Big Interactive Dual Toggle */}
+            <div className="flex items-center p-1 bg-slate-950/90 border border-slate-800 rounded-xl gap-1">
+              <button
+                onClick={() => {
+                  sound.playClick();
+                  setSecurityMode('vulnerable');
+                }}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  securityMode === 'vulnerable'
+                    ? 'bg-red-950 text-red-200 border border-red-500/80 shadow-sm shadow-red-950/50'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <ShieldAlert className="w-4 h-4 text-red-400" />
+                <span>Có Lỗ Hổng</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  sound.playClick();
+                  setSecurityMode('patched');
+                }}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  securityMode === 'patched'
+                    ? 'bg-emerald-950 text-emerald-200 border border-emerald-500/80 shadow-sm shadow-emerald-950/50'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                <span>Đã Vá An Toàn</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Code Viewer Panel with syntax lines and vulnerability callout */}
+          <div className="flex-1 overflow-y-auto flex flex-col p-3 sm:p-3.5">
+            <div className="flex items-center justify-between pb-2 text-xs text-slate-300 border-b border-slate-800 mb-2">
+              <div className="flex items-center gap-2">
+                <FileCode className="w-4 h-4 text-blue-400" />
+                <span className="font-mono font-bold text-slate-200">
+                  {securityMode === 'vulnerable'
+                    ? currentScenario.vulnerableCode.filename
+                    : currentScenario.patchedCode.filename}
+                </span>
+              </div>
+              <span
+                className={`text-xs font-mono font-bold ${
+                  securityMode === 'vulnerable' ? 'text-red-400' : 'text-emerald-400'
+                }`}
+              >
+                {securityMode === 'vulnerable' ? '● Unsanitized Code' : '● Parameterized & Protected'}
+              </span>
+            </div>
+
+            {/* Syntax code block */}
+            <div className="bg-[#050811] border border-[#1e293b] rounded-xl font-mono text-xs sm:text-sm leading-relaxed p-3 overflow-x-auto shadow-inner flex-1">
+              {securityMode === 'vulnerable'
+                ? currentScenario.vulnerableCode.lines.map((line, idx) => (
+                    <div
+                      key={idx}
+                      className={`flex items-start py-0.5 px-1.5 rounded ${
+                        line.isVulnerable
+                          ? 'bg-red-950/60 text-red-100 border-l-2 border-red-500 font-semibold'
+                          : 'text-slate-300'
+                      }`}
+                    >
+                      <span className="w-7 shrink-0 select-none text-slate-500 text-right pr-2 text-xs">
+                        {idx + 1}
+                      </span>
+                      <span className="whitespace-pre flex-1">{line.text || ' '}</span>
+                      {line.note && (
+                        <span className="text-xs text-amber-300 italic ml-2 select-none shrink-0">
+                          # {line.note}
+                        </span>
+                      )}
+                    </div>
+                  ))
+                : currentScenario.patchedCode.lines.map((line, idx) => (
+                    <div
+                      key={idx}
+                      className={`flex items-start py-0.5 px-1.5 rounded ${
+                        line.isPatched
+                          ? 'bg-emerald-950/60 text-emerald-100 border-l-2 border-emerald-500 font-semibold'
+                          : 'text-slate-300'
+                      }`}
+                    >
+                      <span className="w-7 shrink-0 select-none text-slate-500 text-right pr-2 text-xs">
+                        {idx + 1}
+                      </span>
+                      <span className="whitespace-pre flex-1">{line.text || ' '}</span>
+                      {line.note && (
+                        <span className="text-xs text-emerald-300 italic ml-2 select-none shrink-0">
+                          # {line.note}
+                        </span>
+                      )}
+                    </div>
+                  ))}
+            </div>
+
+            {/* Vulnerability Explanation & Impact Footer */}
+            <div className="mt-3 p-3 rounded-xl bg-[#0f172a] border border-[#1e293b] text-xs sm:text-sm text-slate-300 shrink-0">
+              <div className="flex items-center gap-2 font-bold text-slate-100 mb-1">
+                <Info className="w-4 h-4 text-blue-400" />
+                <span>Cơ chế bảo mật & Nguyên lý:</span>
+              </div>
+              <p className="text-slate-300 text-xs sm:text-sm leading-relaxed">
+                {securityMode === 'vulnerable'
+                  ? currentScenario.fullDesc
+                  : currentScenario.defenseOverview}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* RIGHT PANE: Mock Target Browser Window, Quick Payloads & Exploit Result (52% on desktop) */}
+        <div
+          className={`w-full lg:w-[52%] h-full flex flex-col bg-[#0b0f19] overflow-hidden ${
+            mobileTab === 'target' ? 'flex' : 'hidden lg:flex'
+          }`}
+        >
+          {/* Quick Payload Toolbar */}
+          <div className="px-3 sm:px-4 py-2 bg-[#0e1628] border-b border-[#1e293b] flex items-center justify-between gap-2 overflow-x-auto shrink-0">
+            <div className="flex items-center gap-1.5 shrink-0 text-xs font-bold text-slate-300">
+              <Zap className="w-4 h-4 text-amber-400" />
+              <span>Nạp Payload mẫu:</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              {currentScenario.payloads.map((pl) => (
+                <div key={pl.id} className="flex items-center shrink-0">
+                  <button
+                    onClick={() => handleApplyPayload(pl.payload, pl.targetField)}
+                    className="px-2.5 py-1.5 text-xs font-mono font-bold bg-slate-900 border border-slate-700 hover:border-amber-500 hover:text-amber-200 text-slate-200 rounded-lg transition-colors whitespace-nowrap cursor-pointer shadow-sm"
+                    title={pl.description}
+                  >
+                    {pl.label}
+                  </button>
+                  <button
+                    onClick={() => handleCopyPayload(pl.payload, pl.id)}
+                    className="p-1.5 text-slate-400 hover:text-white ml-0.5 cursor-pointer"
+                    title="Copy payload"
+                  >
+                    <Copy className="w-3.5 h-3.5" />
                   </button>
                 </div>
-              </div>
-            )}
+              ))}
+            </div>
+          </div>
 
-            {/* SCENARIO 2: OS Command Injection Ping Tool */}
-            {selectedScenarioId === 'cmd_injection' && (
-              <div className="max-w-lg mx-auto w-full p-4 rounded-md border border-neutral-800 bg-[#141418] my-auto">
-                <div className="mb-3">
-                  <h4 className="text-sm font-semibold text-neutral-200 flex items-center gap-2">
-                    <Server className="w-4 h-4 text-emerald-400" />
-                    Network Connectivity Diagnostics
-                  </h4>
-                  <p className="text-xs text-neutral-400 mt-1">
-                    Công cụ gửi gói tin ICMP echo request để kiểm tra khả năng định tuyến máy chủ.
+          {/* Mock Browser Container */}
+          <div className="flex-1 flex flex-col m-2.5 sm:m-3.5 rounded-xl border border-[#1e293b] bg-[#0f172a] overflow-hidden shadow-2xl">
+            {/* Browser Chrome Header (Address bar, controls) */}
+            <div className="h-11 bg-[#0e1628] border-b border-[#1e293b] px-3 flex items-center gap-2.5 shrink-0 select-none">
+              {/* Traffic Lights dots */}
+              <div className="flex items-center gap-1.5">
+                <div className="w-3 h-3 rounded-full bg-red-500" />
+                <div className="w-3 h-3 rounded-full bg-amber-500" />
+                <div className="w-3 h-3 rounded-full bg-emerald-500" />
+              </div>
+
+              {/* Back / Forward / Refresh controls */}
+              <div className="flex items-center gap-1 text-slate-400">
+                <button
+                  className="p-1 hover:text-white rounded transition-colors"
+                  title="Back"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                </button>
+                <button
+                  className="p-1 hover:text-white rounded transition-colors"
+                  title="Forward"
+                >
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={handleExecuteAttack}
+                  className="p-1 hover:text-white rounded transition-colors cursor-pointer"
+                  title="Reload"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* URL Omnibox */}
+              <div className="flex-1 flex items-center bg-[#070b14] border border-slate-700/80 rounded-lg px-2.5 py-1.5 text-xs sm:text-sm font-mono text-slate-200 focus-within:border-emerald-500 transition-colors">
+                <Lock className="w-3.5 h-3.5 text-emerald-400 mr-2 shrink-0" />
+                <input
+                  type="text"
+                  value={urlInput}
+                  onChange={(e) => setUrlInput(e.target.value)}
+                  className="w-full bg-transparent outline-none text-white text-xs sm:text-sm font-mono"
+                  placeholder={currentScenario.urlPlaceholder}
+                />
+              </div>
+            </div>
+
+            {/* Browser Viewport Content */}
+            <div className="flex-1 p-3.5 sm:p-5 overflow-y-auto bg-[#0a0f1d] flex flex-col">
+              {/* Target App Bar Banner */}
+              <div className="border-b border-slate-800 pb-3 mb-4 flex items-center justify-between flex-wrap gap-2">
+                <div>
+                  <h3 className="text-sm sm:text-base font-extrabold text-white flex items-center gap-2">
+                    <Globe className="w-4 h-4 text-blue-400" />
+                    {currentScenario.mockAppContext.appTitle}
+                  </h3>
+                  <p className="text-xs text-slate-300 mt-0.5">
+                    {currentScenario.mockAppContext.description}
                   </p>
                 </div>
-
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-xs font-medium text-neutral-300 mb-1">
-                      Địa chỉ máy chủ đích (Target Host / IP Address)
-                    </label>
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={formInputs.host}
-                        onChange={(e) =>
-                          setFormInputs((prev) => ({ ...prev, host: e.target.value }))
-                        }
-                        placeholder="127.0.0.1 or 127.0.0.1; whoami"
-                        className="flex-1 px-3 py-1.5 bg-[#09090b] border border-neutral-700 rounded font-mono text-xs text-neutral-200 focus:outline-none focus:border-red-500"
-                      />
-                      <button
-                        onClick={handleExecuteAttack}
-                        disabled={isLoading}
-                        className="px-4 py-1.5 bg-red-600 hover:bg-red-700 text-white font-medium rounded text-xs transition-colors shrink-0 cursor-pointer"
-                      >
-                        {isLoading ? 'Đang ping...' : 'Chạy Chẩn Đoán'}
-                      </button>
-                    </div>
-                  </div>
-                  <div className="text-[11px] text-neutral-500">
-                    Lệnh thực thi máy chủ: <code className="text-neutral-400">ping -c 2 {'{target_host}'}</code>
-                  </div>
-                </div>
+                <span className="text-xs font-mono text-slate-400 bg-slate-900 border border-slate-800 rounded-lg px-2 py-0.5">
+                  Host: {currentScenario.mockAppContext.serverHost}
+                </span>
               </div>
-            )}
 
-            {/* SCENARIO 3: IDOR Medical Record Viewer */}
-            {selectedScenarioId === 'idor' && (
-              <div className="max-w-lg mx-auto w-full p-4 rounded-md border border-neutral-800 bg-[#141418] my-auto">
-                <div className="mb-3 flex items-center justify-between border-b border-neutral-800 pb-2">
-                  <div>
-                    <h4 className="text-sm font-semibold text-neutral-200">
-                      MediCare Patient File Portal
+              {/* SCENARIO 1: SQL Injection Login Mock Form */}
+              {selectedScenarioId === 'sqli' && (
+                <div className="max-w-md mx-auto w-full p-4 sm:p-5 rounded-xl border border-slate-800 bg-[#0f172a] my-auto shadow-lg">
+                  <div className="text-center mb-4">
+                    <h4 className="text-sm sm:text-base font-bold text-white">
+                      ACME Enterprise Single Sign-On
                     </h4>
-                    <p className="text-xs text-neutral-400">
-                      Tài khoản phiên làm việc: <span className="text-emerald-400 font-mono">Alex Mercer (ID: 1001)</span>
+                    <p className="text-xs text-slate-300 mt-1">
+                      Cổng đăng nhập hệ thống thông tin nhân sự và cơ sở dữ liệu
                     </p>
                   </div>
-                  <span className="text-[10px] font-mono bg-blue-950/60 text-blue-300 border border-blue-800 px-2 py-0.5 rounded">
-                    Role: Standard Patient
-                  </span>
-                </div>
 
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-xs font-medium text-neutral-300 mb-1">
-                      Mã số hồ sơ bệnh án (Query Parameter: ?id=...)
-                    </label>
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={formInputs.id}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          setFormInputs((prev) => ({ ...prev, id: val }));
-                          setUrlInput(`https://medicare-portal.health.org/patient/records?id=${val}`);
-                        }}
-                        placeholder="1001, 1002, 9999"
-                        className="flex-1 px-3 py-1.5 bg-[#09090b] border border-neutral-700 rounded font-mono text-xs text-neutral-200 focus:outline-none focus:border-red-500"
-                      />
-                      <button
-                        onClick={handleExecuteAttack}
-                        disabled={isLoading}
-                        className="px-4 py-1.5 bg-red-600 hover:bg-red-700 text-white font-medium rounded text-xs transition-colors shrink-0 cursor-pointer"
-                      >
-                        {isLoading ? 'Đang truy vấn...' : 'Tải Hồ Sơ'}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* SCENARIO 4: Reflected XSS Search */}
-            {selectedScenarioId === 'xss' && (
-              <div className="max-w-lg mx-auto w-full p-4 rounded-md border border-neutral-800 bg-[#141418] my-auto">
-                <div className="mb-3">
-                  <h4 className="text-sm font-semibold text-neutral-200">
-                    FinTech Help Desk Knowledgebase
-                  </h4>
-                  <p className="text-xs text-neutral-400 mt-1">
-                    Tìm kiếm tài liệu hướng dẫn và câu hỏi thường gặp về thanh toán.
-                  </p>
-                </div>
-
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-xs font-medium text-neutral-300 mb-1">
-                      Từ khóa tìm kiếm (Search Query Param: ?q=...)
-                    </label>
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={formInputs.q}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          setFormInputs((prev) => ({ ...prev, q: val }));
-                          setUrlInput(`https://helpdesk.fintech-global.com/search?q=${encodeURIComponent(val)}`);
-                        }}
-                        placeholder="invoice or <script>alert(1)</script>"
-                        className="flex-1 px-3 py-1.5 bg-[#09090b] border border-neutral-700 rounded font-mono text-xs text-neutral-200 focus:outline-none focus:border-red-500"
-                      />
-                      <button
-                        onClick={handleExecuteAttack}
-                        disabled={isLoading}
-                        className="px-4 py-1.5 bg-red-600 hover:bg-red-700 text-white font-medium rounded text-xs transition-colors shrink-0 cursor-pointer"
-                      >
-                        {isLoading ? 'Đang tìm...' : 'Tìm Kiếm'}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* EXECUTION RESULT DISPLAY / EXPLOIT BANNER */}
-            {executionResult && (
-              <div className="mt-4 pt-4 border-t border-neutral-800">
-                {/* Result Status Banner */}
-                <div
-                  className={`p-3 rounded-md border mb-3 flex items-start justify-between gap-3 ${
-                    executionResult.status === 'success' && securityMode === 'vulnerable'
-                      ? 'bg-red-950/70 border-red-500 text-red-200 shadow-lg shadow-red-950/40'
-                      : executionResult.status === 'mitigated'
-                      ? 'bg-emerald-950/70 border-emerald-500 text-emerald-200 shadow-lg shadow-emerald-950/40'
-                      : 'bg-neutral-900 border-neutral-700 text-neutral-300'
-                  }`}
-                >
-                  <div className="flex items-start gap-2.5">
-                    {executionResult.status === 'success' && securityMode === 'vulnerable' ? (
-                      <ShieldAlert className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
-                    ) : executionResult.status === 'mitigated' ? (
-                      <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
-                    ) : (
-                      <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
-                    )}
+                  <div className="space-y-3.5">
                     <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-xs uppercase tracking-wide">
-                          {executionResult.status === 'success' && securityMode === 'vulnerable'
-                            ? 'EXPLOIT SUCCESSFUL'
-                            : executionResult.status === 'mitigated'
-                            ? 'ATTACK MITIGATED'
-                            : 'RESPONSE RECEIVED'}
-                        </span>
-                        <span className="font-mono text-[10px] bg-black/50 px-1.5 py-0.5 rounded border border-white/10">
-                          HTTP {executionResult.httpStatus}
-                        </span>
-                      </div>
-                      <p className="text-xs mt-1 font-medium">{executionResult.message}</p>
+                      <label className="block text-xs sm:text-sm font-bold text-slate-200 mb-1">
+                        Tên người dùng (Username / SQL injection point)
+                      </label>
+                      <input
+                        type="text"
+                        value={formInputs.username}
+                        onChange={(e) =>
+                          setFormInputs((prev) => ({ ...prev, username: e.target.value }))
+                        }
+                        placeholder="admin or admin' --"
+                        className="w-full h-11 px-3 bg-[#070b14] border border-slate-700 rounded-xl font-mono text-sm text-white focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
+                      />
                     </div>
-                  </div>
 
-                  <span className="text-[10px] font-mono text-neutral-400 shrink-0">
-                    {executionResult.timestamp}
-                  </span>
+                    <div>
+                      <label className="block text-xs sm:text-sm font-bold text-slate-200 mb-1">
+                        Mật khẩu (Password)
+                      </label>
+                      <input
+                        type="password"
+                        value={formInputs.password}
+                        onChange={(e) =>
+                          setFormInputs((prev) => ({ ...prev, password: e.target.value }))
+                        }
+                        placeholder="••••••••••••"
+                        className="w-full h-11 px-3 bg-[#070b14] border border-slate-700 rounded-xl font-mono text-sm text-white focus:outline-none focus:border-slate-500"
+                      />
+                    </div>
+
+                    <button
+                      onClick={handleExecuteAttack}
+                      disabled={isLoading}
+                      className="w-full h-11 sm:h-12 px-4 mt-2 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-extrabold rounded-xl text-xs sm:text-sm transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-red-950/60 active:scale-[0.99]"
+                    >
+                      {isLoading ? (
+                        <span>Đang xác thực truy vấn SQL...</span>
+                      ) : (
+                        <>
+                          <Zap className="w-4 h-4" />
+                          <span>Gửi Yêu Cầu Đăng Nhập (Execute Query)</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </div>
+              )}
 
-                {/* Leaked Flag (if CTF solved) */}
-                {executionResult.flagRevealed && securityMode === 'vulnerable' && (
-                  <div className="mb-3 p-2.5 rounded bg-amber-950/40 border border-amber-500/50 flex items-center justify-between text-xs">
-                    <div className="flex items-center gap-2 text-amber-300">
-                      <CheckCircle2 className="w-4 h-4 text-amber-400" />
-                      <span className="font-semibold">Lab CTF Flag Captured:</span>
-                      <code className="font-mono bg-black/60 px-2 py-0.5 rounded text-amber-200 font-bold">
-                        {executionResult.flagRevealed}
-                      </code>
-                    </div>
+              {/* SCENARIO 2: OS Command Injection Ping Tool */}
+              {selectedScenarioId === 'cmd_injection' && (
+                <div className="max-w-lg mx-auto w-full p-4 sm:p-5 rounded-xl border border-slate-800 bg-[#0f172a] my-auto shadow-lg">
+                  <div className="mb-3.5">
+                    <h4 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
+                      <Server className="w-4 h-4 text-emerald-400" />
+                      Network Connectivity Diagnostics
+                    </h4>
+                    <p className="text-xs text-slate-300 mt-1">
+                      Công cụ gửi gói tin ICMP echo request để kiểm tra khả năng định tuyến máy chủ.
+                    </p>
                   </div>
-                )}
 
-                {/* Console Output or Leaked DB Records */}
-                {executionResult.rawConsole && (
-                  <div className="mb-3 rounded bg-black border border-neutral-800 p-2.5 font-mono text-[11px] text-green-400 overflow-x-auto">
-                    <div className="text-neutral-500 text-[10px] mb-1">
-                      [Server Terminal STDOUT]
-                    </div>
-                    {executionResult.rawConsole.map((line, i) => (
-                      <div key={i} className="whitespace-pre">
-                        {line}
+                  <div className="space-y-3.5">
+                    <div>
+                      <label className="block text-xs sm:text-sm font-bold text-slate-200 mb-1">
+                        Địa chỉ máy chủ đích (Target Host / IP Address)
+                      </label>
+                      <div className="flex flex-col sm:flex-row gap-2">
+                        <input
+                          type="text"
+                          value={formInputs.host}
+                          onChange={(e) =>
+                            setFormInputs((prev) => ({ ...prev, host: e.target.value }))
+                          }
+                          placeholder="127.0.0.1 or 127.0.0.1; whoami"
+                          className="flex-1 h-11 px-3 bg-[#070b14] border border-slate-700 rounded-xl font-mono text-sm text-white focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
+                        />
+                        <button
+                          onClick={handleExecuteAttack}
+                          disabled={isLoading}
+                          className="h-11 px-5 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-extrabold rounded-xl text-xs sm:text-sm transition-all shrink-0 cursor-pointer shadow-md"
+                        >
+                          {isLoading ? 'Đang ping...' : 'Chạy Chẩn Đoán'}
+                        </button>
                       </div>
-                    ))}
-                  </div>
-                )}
-
-                {executionResult.cookieStolen && (
-                  <div className="mb-3 p-2.5 rounded bg-red-950/40 border border-red-500/40 text-xs font-mono text-red-200">
-                    <div className="font-semibold text-red-300 mb-1 flex items-center gap-1.5">
-                      <Terminal className="w-3.5 h-3.5" />
-                      <span>Exfiltrated Document Cookie:</span>
                     </div>
-                    <div className="bg-black/60 p-2 rounded text-[11px] break-all border border-red-900/40">
-                      {executionResult.cookieStolen}
+                    <div className="text-xs text-slate-400">
+                      Lệnh thực thi máy chủ: <code className="text-slate-200 font-bold">ping -c 2 {'{target_host}'}</code>
                     </div>
                   </div>
-                )}
-
-                {executionResult.dataOutput && (
-                  <div className="mb-3 rounded bg-black/80 border border-neutral-800 p-2.5 text-xs">
-                    <div className="text-neutral-400 font-semibold mb-1">
-                      Dữ liệu phản hồi từ máy chủ (JSON Response Payload):
-                    </div>
-                    <pre className="font-mono text-[11px] text-neutral-300 overflow-x-auto bg-neutral-950 p-2 rounded border border-neutral-900">
-                      {JSON.stringify(executionResult.dataOutput, null, 2)}
-                    </pre>
-                  </div>
-                )}
-
-                {/* Defense analysis callout */}
-                <div className="text-xs text-neutral-400 bg-neutral-900/70 p-2.5 rounded border border-neutral-800">
-                  <span className="font-semibold text-neutral-200">Phân tích phòng thủ: </span>
-                  {executionResult.defenseExplanation}
                 </div>
-              </div>
-            )}
+              )}
+
+              {/* SCENARIO 3: IDOR Medical Record Viewer */}
+              {selectedScenarioId === 'idor' && (
+                <div className="max-w-lg mx-auto w-full p-4 sm:p-5 rounded-xl border border-slate-800 bg-[#0f172a] my-auto shadow-lg">
+                  <div className="mb-3.5 flex items-center justify-between border-b border-slate-800 pb-2.5">
+                    <div>
+                      <h4 className="text-sm sm:text-base font-bold text-white">
+                        MediCare Patient File Portal
+                      </h4>
+                      <p className="text-xs text-slate-300">
+                        Tài khoản phiên làm việc: <span className="text-emerald-400 font-mono font-bold">Alex Mercer (ID: 1001)</span>
+                      </p>
+                    </div>
+                    <span className="text-xs font-mono bg-blue-950/80 text-blue-300 border border-blue-700 px-2 py-0.5 rounded-lg font-bold">
+                      Standard Patient
+                    </span>
+                  </div>
+
+                  <div className="space-y-3.5">
+                    <div>
+                      <label className="block text-xs sm:text-sm font-bold text-slate-200 mb-1">
+                        Mã số hồ sơ bệnh án (Query Parameter: ?id=...)
+                      </label>
+                      <div className="flex flex-col sm:flex-row gap-2">
+                        <input
+                          type="text"
+                          value={formInputs.id}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setFormInputs((prev) => ({ ...prev, id: val }));
+                            setUrlInput(`https://medicare-portal.health.org/patient/records?id=${val}`);
+                          }}
+                          placeholder="1001, 1002, 9999"
+                          className="flex-1 h-11 px-3 bg-[#070b14] border border-slate-700 rounded-xl font-mono text-sm text-white focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
+                        />
+                        <button
+                          onClick={handleExecuteAttack}
+                          disabled={isLoading}
+                          className="h-11 px-5 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-extrabold rounded-xl text-xs sm:text-sm transition-all shrink-0 cursor-pointer shadow-md"
+                        >
+                          {isLoading ? 'Đang truy vấn...' : 'Tải Hồ Sơ'}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* SCENARIO 4: Reflected XSS Search */}
+              {selectedScenarioId === 'xss' && (
+                <div className="max-w-lg mx-auto w-full p-4 sm:p-5 rounded-xl border border-slate-800 bg-[#0f172a] my-auto shadow-lg">
+                  <div className="mb-3.5">
+                    <h4 className="text-sm sm:text-base font-bold text-white">
+                      FinTech Help Desk Knowledgebase
+                    </h4>
+                    <p className="text-xs text-slate-300 mt-1">
+                      Tìm kiếm tài liệu hướng dẫn và câu hỏi thường gặp về thanh toán.
+                    </p>
+                  </div>
+
+                  <div className="space-y-3.5">
+                    <div>
+                      <label className="block text-xs sm:text-sm font-bold text-slate-200 mb-1">
+                        Từ khóa tìm kiếm (Search Query Param: ?q=...)
+                      </label>
+                      <div className="flex flex-col sm:flex-row gap-2">
+                        <input
+                          type="text"
+                          value={formInputs.q}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setFormInputs((prev) => ({ ...prev, q: val }));
+                            setUrlInput(`https://helpdesk.fintech-global.com/search?q=${encodeURIComponent(val)}`);
+                          }}
+                          placeholder="invoice or <script>alert(1)</script>"
+                          className="flex-1 h-11 px-3 bg-[#070b14] border border-slate-700 rounded-xl font-mono text-sm text-white focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
+                        />
+                        <button
+                          onClick={handleExecuteAttack}
+                          disabled={isLoading}
+                          className="h-11 px-5 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-extrabold rounded-xl text-xs sm:text-sm transition-all shrink-0 cursor-pointer shadow-md"
+                        >
+                          {isLoading ? 'Đang tìm...' : 'Tìm Kiếm'}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* EXECUTION RESULT DISPLAY / EXPLOIT BANNER */}
+              {executionResult && (
+                <div className="mt-4 pt-4 border-t border-slate-800">
+                  {/* Result Status Banner */}
+                  <div
+                    className={`p-3.5 sm:p-4 rounded-xl border mb-3 flex items-start justify-between gap-3 ${
+                      executionResult.status === 'success' && securityMode === 'vulnerable'
+                        ? 'bg-red-950/80 border-red-500 text-red-100 shadow-lg shadow-red-950/50'
+                        : executionResult.status === 'mitigated'
+                        ? 'bg-emerald-950/80 border-emerald-500 text-emerald-100 shadow-lg shadow-emerald-950/50'
+                        : 'bg-slate-900 border-slate-700 text-slate-200'
+                    }`}
+                  >
+                    <div className="flex items-start gap-2.5">
+                      {executionResult.status === 'success' && securityMode === 'vulnerable' ? (
+                        <ShieldAlert className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
+                      ) : executionResult.status === 'mitigated' ? (
+                        <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+                      ) : (
+                        <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+                      )}
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-extrabold text-xs sm:text-sm uppercase tracking-wide">
+                            {executionResult.status === 'success' && securityMode === 'vulnerable'
+                              ? 'EXPLOIT SUCCESSFUL'
+                              : executionResult.status === 'mitigated'
+                              ? 'ATTACK MITIGATED'
+                              : 'RESPONSE RECEIVED'}
+                          </span>
+                          <span className="font-mono text-xs bg-black/60 px-2 py-0.5 rounded-md border border-white/10 font-bold">
+                            HTTP {executionResult.httpStatus}
+                          </span>
+                        </div>
+                        <p className="text-xs sm:text-sm mt-1 font-semibold leading-relaxed">
+                          {executionResult.message}
+                        </p>
+                      </div>
+                    </div>
+
+                    <span className="text-xs font-mono text-slate-400 shrink-0">
+                      {executionResult.timestamp}
+                    </span>
+                  </div>
+
+                  {/* Leaked Flag (if CTF solved) */}
+                  {executionResult.flagRevealed && securityMode === 'vulnerable' && (
+                    <div className="mb-3 p-3 rounded-xl bg-amber-950/50 border border-amber-500/60 flex items-center justify-between text-xs sm:text-sm shadow-md">
+                      <div className="flex items-center gap-2 text-amber-200 flex-wrap">
+                        <CheckCircle2 className="w-4 h-4 text-amber-400 shrink-0" />
+                        <span className="font-bold">Lab CTF Flag Captured:</span>
+                        <code className="font-mono bg-black/80 px-2 py-1 rounded text-amber-300 font-extrabold">
+                          {executionResult.flagRevealed}
+                        </code>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Console Output or Leaked DB Records */}
+                  {executionResult.rawConsole && (
+                    <div className="mb-3 rounded-xl bg-black border border-slate-800 p-3 font-mono text-xs sm:text-sm text-green-400 overflow-x-auto">
+                      <div className="text-slate-500 text-xs mb-1 font-bold">
+                        [Server Terminal STDOUT]
+                      </div>
+                      {executionResult.rawConsole.map((line, i) => (
+                        <div key={i} className="whitespace-pre">
+                          {line}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {executionResult.cookieStolen && (
+                    <div className="mb-3 p-3 rounded-xl bg-red-950/50 border border-red-500/50 text-xs sm:text-sm font-mono text-red-200">
+                      <div className="font-bold text-red-300 mb-1 flex items-center gap-2">
+                        <Terminal className="w-4 h-4" />
+                        <span>Exfiltrated Document Cookie:</span>
+                      </div>
+                      <div className="bg-black/70 p-2.5 rounded-lg text-xs break-all border border-red-900/50">
+                        {executionResult.cookieStolen}
+                      </div>
+                    </div>
+                  )}
+
+                  {executionResult.dataOutput && (
+                    <div className="mb-3 rounded-xl bg-black/90 border border-slate-800 p-3 text-xs sm:text-sm">
+                      <div className="text-slate-300 font-bold mb-1">
+                        Dữ liệu phản hồi từ máy chủ (JSON Response Payload):
+                      </div>
+                      <pre className="font-mono text-xs text-slate-200 overflow-x-auto bg-slate-950 p-2.5 rounded-lg border border-slate-900">
+                        {JSON.stringify(executionResult.dataOutput, null, 2)}
+                      </pre>
+                    </div>
+                  )}
+
+                  {/* Defense analysis callout */}
+                  <div className="text-xs sm:text-sm text-slate-300 bg-slate-900/80 p-3 rounded-xl border border-slate-800 leading-relaxed">
+                    <span className="font-bold text-white">Phân tích phòng thủ: </span>
+                    {executionResult.defenseExplanation}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
   );
 };

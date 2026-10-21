@@ -12,77 +12,77 @@ export const QuickCheatSheetModal: React.FC<QuickCheatSheetModalProps> = ({ isOp
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-3xl bg-[#121215] border border-neutral-700 rounded-lg shadow-2xl flex flex-col h-[75vh] overflow-hidden">
+    <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-2.5 sm:p-6">
+      <div className="w-full max-w-3xl bg-[#0f172a] border border-slate-700 rounded-2xl shadow-2xl flex flex-col h-[80vh] overflow-hidden">
         {/* Header */}
-        <div className="px-4 py-3 bg-[#18181c] border-b border-[#27272a] flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-2">
+        <div className="px-4 py-3.5 bg-[#0e1628] border-b border-slate-800 flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-2.5">
             <BookOpen className="w-4 h-4 text-amber-400" />
-            <h3 className="text-xs font-bold text-neutral-100 uppercase tracking-wide">
+            <h3 className="text-xs sm:text-sm font-extrabold text-white uppercase tracking-wide">
               CyberSec Engineering Quick Reference & CheatSheet
             </h3>
           </div>
           <button
             onClick={onClose}
-            className="p-1 text-neutral-400 hover:text-white transition-colors"
+            className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
           >
-            <X className="w-4 h-4" />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Tab selection */}
-        <div className="flex items-center gap-1 p-2 bg-[#0c0c0e] border-b border-[#27272a] overflow-x-auto no-scrollbar shrink-0">
+        <div className="flex items-center gap-2 p-2.5 bg-[#090f1d] border-b border-slate-800 overflow-x-auto no-scrollbar shrink-0">
           <button
             onClick={() => setActiveCategory('owasp')}
-            className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded text-xs font-medium transition-colors whitespace-nowrap cursor-pointer ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
               activeCategory === 'owasp'
-                ? 'bg-[#27272a] text-white shadow-sm'
-                : 'text-neutral-400 hover:text-neutral-200'
+                ? 'bg-slate-800 text-white shadow-sm border border-slate-600'
+                : 'text-slate-400 hover:text-white hover:bg-slate-900'
             }`}
           >
-            <Shield className="w-3.5 h-3.5 text-red-400 shrink-0" />
+            <Shield className="w-4 h-4 text-red-400 shrink-0" />
             <span>OWASP Top 10</span>
           </button>
 
           <button
             onClick={() => setActiveCategory('linux')}
-            className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded text-xs font-medium transition-colors whitespace-nowrap cursor-pointer ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
               activeCategory === 'linux'
-                ? 'bg-[#27272a] text-white shadow-sm'
-                : 'text-neutral-400 hover:text-neutral-200'
+                ? 'bg-slate-800 text-white shadow-sm border border-slate-600'
+                : 'text-slate-400 hover:text-white hover:bg-slate-900'
             }`}
           >
-            <Terminal className="w-3.5 h-3.5 text-purple-400 shrink-0" />
+            <Terminal className="w-4 h-4 text-purple-400 shrink-0" />
             <span>Linux PrivEsc & GTFOBins</span>
           </button>
 
           <button
             onClick={() => setActiveCategory('ports')}
-            className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded text-xs font-medium transition-colors whitespace-nowrap cursor-pointer ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
               activeCategory === 'ports'
-                ? 'bg-[#27272a] text-white shadow-sm'
-                : 'text-neutral-400 hover:text-neutral-200'
+                ? 'bg-slate-800 text-white shadow-sm border border-slate-600'
+                : 'text-slate-400 hover:text-white hover:bg-slate-900'
             }`}
           >
-            <Network className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+            <Network className="w-4 h-4 text-blue-400 shrink-0" />
             <span>Network Ports</span>
           </button>
 
           <button
             onClick={() => setActiveCategory('http')}
-            className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded text-xs font-medium transition-colors whitespace-nowrap cursor-pointer ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
               activeCategory === 'http'
-                ? 'bg-[#27272a] text-white shadow-sm'
-                : 'text-neutral-400 hover:text-neutral-200'
+                ? 'bg-slate-800 text-white shadow-sm border border-slate-600'
+                : 'text-slate-400 hover:text-white hover:bg-slate-900'
             }`}
           >
-            <Code className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+            <Code className="w-4 h-4 text-emerald-400 shrink-0" />
             <span>HTTP Security</span>
           </button>
         </div>
 
         {/* Content body */}
-        <div className="flex-1 p-4 overflow-y-auto text-xs leading-relaxed font-mono select-text space-y-3">
+        <div className="flex-1 p-3.5 sm:p-5 overflow-y-auto text-xs sm:text-sm leading-relaxed font-mono select-text space-y-3">
           {activeCategory === 'owasp' && (
             <div className="space-y-2">
               <div className="p-2.5 rounded bg-black/40 border border-neutral-800">

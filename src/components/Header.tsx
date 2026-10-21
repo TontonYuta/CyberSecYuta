@@ -57,17 +57,17 @@ export const Header: React.FC<HeaderProps> = ({
   const rank = getRankBadge(completedLessonsCount);
 
   return (
-    <header className="h-12 w-full bg-[#09090b] border-b border-[#27272a] px-2.5 sm:px-4 flex items-center justify-between gap-2 shrink-0 z-40">
+    <header className="h-14 w-full bg-[#0d1322] border-b border-[#1e293b] px-3 sm:px-4 flex items-center justify-between gap-2 shrink-0 z-40 select-none shadow-md">
       {/* Zone 1: Brand title & Rank Badge */}
       <div className="flex items-center gap-2 sm:gap-3 shrink-0">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded bg-red-950/70 border border-red-500/50 flex items-center justify-center text-red-400 shrink-0">
-            <Shield className="w-4 h-4 text-red-500" />
+          <div className="w-8 h-8 rounded-lg bg-rose-950/80 border border-rose-500/60 flex items-center justify-center text-rose-400 shrink-0 shadow-sm shadow-rose-950/50">
+            <Shield className="w-4 h-4 text-rose-400" />
           </div>
           <div className="flex flex-col">
-            <span className="font-extrabold text-xs sm:text-sm tracking-tight text-white flex items-center gap-1.5 whitespace-nowrap">
-              CyberSec<span className="text-emerald-400">Yuta</span>
-              <span className="hidden xl:inline text-neutral-400 font-normal text-xs">
+            <span className="font-extrabold text-sm sm:text-base tracking-tight text-white flex items-center gap-1.5 whitespace-nowrap">
+              CyberSec<span className="text-emerald-400 font-black">Yuta</span>
+              <span className="hidden xl:inline text-slate-400 font-normal text-xs ml-1">
                 — Lộ Trình 12 Bài Thực Chiến Chuẩn Nghề
               </span>
             </span>
@@ -76,7 +76,7 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Dynamic Rank Badge */}
         <span
-          className={`text-[10px] font-mono px-1.5 sm:px-2 py-0.5 rounded border font-semibold whitespace-nowrap hidden sm:inline-block ${rank.color}`}
+          className={`text-xs font-mono px-2 py-0.5 rounded-full border font-semibold whitespace-nowrap hidden sm:inline-block ${rank.color}`}
         >
           <span className="hidden md:inline">{rank.text}</span>
           <span className="md:hidden">{rank.short}</span>
@@ -84,38 +84,38 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       {/* Zone 2: Progress Bar & Mode Switcher */}
-      <div className="flex items-center gap-2 sm:gap-3 justify-center">
+      <div className="flex items-center gap-2 sm:gap-4 justify-center">
         {/* Graduation Progress Bar (Desktop only) */}
         <div className="flex-1 max-w-xs hidden lg:flex flex-col gap-1 min-w-[140px]">
-          <div className="flex items-center justify-between text-[10px] font-mono">
-            <span className="text-neutral-400">Tiến độ tốt nghiệp:</span>
+          <div className="flex items-center justify-between text-xs font-mono">
+            <span className="text-slate-400 font-medium">Tiến độ tốt nghiệp:</span>
             <span className="text-emerald-400 font-bold tabular-nums">
               {completedLessonsCount}/12 ({progressPct}%)
             </span>
           </div>
-          <div className="w-full h-1.5 bg-neutral-900 border border-neutral-800 rounded-full overflow-hidden">
+          <div className="w-full h-2 bg-slate-950 border border-slate-800 rounded-full overflow-hidden">
             <div
-              className="h-full bg-emerald-500 transition-all duration-300"
+              className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-300 rounded-full"
               style={{ width: `${progressPct}%` }}
             />
           </div>
         </div>
 
         {/* Mode Switcher: Học Viện Theo Bài vs Chế Độ Tự Do */}
-        <div className="flex items-center p-0.5 bg-[#121215] border border-[#27272a] rounded-md shrink-0">
+        <div className="flex items-center p-1 bg-slate-950/90 border border-slate-800 rounded-lg shrink-0 shadow-inner">
           <button
             onClick={() => {
               sound.playClick();
               onAppModeChange('academy');
             }}
-            className={`flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 text-xs font-semibold rounded transition-colors whitespace-nowrap ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-md transition-all whitespace-nowrap cursor-pointer ${
               appMode === 'academy'
-                ? 'bg-emerald-950/80 text-emerald-200 border border-emerald-600/60 shadow-sm'
-                : 'text-neutral-400 hover:text-white'
+                ? 'bg-emerald-600 text-white shadow-md shadow-emerald-950/60'
+                : 'text-slate-400 hover:text-white'
             }`}
           >
-            <GraduationCap className="w-3.5 h-3.5 text-emerald-400" />
-            <span className="hidden sm:inline">Học Viện Tuyến Tính</span>
+            <GraduationCap className="w-4 h-4 text-emerald-300" />
+            <span className="hidden sm:inline">Học Viện (12 Bài)</span>
             <span className="sm:hidden">Học Viện</span>
           </button>
 
@@ -124,27 +124,27 @@ export const Header: React.FC<HeaderProps> = ({
               sound.playClick();
               onAppModeChange('sandbox_mode');
             }}
-            className={`flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 text-xs font-semibold rounded transition-colors whitespace-nowrap ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-md transition-all whitespace-nowrap cursor-pointer ${
               appMode === 'sandbox_mode'
-                ? 'bg-neutral-800 text-white border border-neutral-600 shadow-sm'
-                : 'text-neutral-400 hover:text-white'
+                ? 'bg-blue-600 text-white shadow-md shadow-blue-950/60'
+                : 'text-slate-400 hover:text-white'
             }`}
           >
-            <Layers className="w-3.5 h-3.5 text-blue-400" />
-            <span className="hidden sm:inline">Chế Độ Tự Do</span>
+            <Layers className="w-4 h-4 text-blue-300" />
+            <span className="hidden sm:inline">Sandbox Tự Do</span>
             <span className="sm:hidden">Sandbox</span>
           </button>
         </div>
       </div>
 
       {/* Zone 3: Graduation Portfolio CTA & Sound Mute Toggle */}
-      <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+      <div className="flex items-center gap-2 shrink-0">
         <button
           onClick={handleToggleMute}
-          className="p-1.5 text-neutral-400 hover:text-white bg-[#121215] border border-[#27272a] rounded transition-colors"
+          className="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-white bg-slate-950/80 border border-slate-800 rounded-lg transition-colors cursor-pointer"
           title={isMuted ? 'Bật âm thanh (Unmute)' : 'Tắt âm thanh (Mute)'}
         >
-          {isMuted ? <VolumeX className="w-3.5 h-3.5 text-neutral-500" /> : <Volume2 className="w-3.5 h-3.5 text-emerald-400" />}
+          {isMuted ? <VolumeX className="w-4 h-4 text-slate-500" /> : <Volume2 className="w-4 h-4 text-emerald-400" />}
         </button>
 
         {/* Graduation Portfolio Button (Glowing emerald when 100%) */}
@@ -153,14 +153,14 @@ export const Header: React.FC<HeaderProps> = ({
             sound.playSuccess();
             onOpenGraduationModal();
           }}
-          className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-bold rounded transition-all whitespace-nowrap shadow-sm cursor-pointer ${
+          className={`h-9 flex items-center gap-1.5 px-3 rounded-lg text-xs font-bold transition-all whitespace-nowrap shadow-sm cursor-pointer ${
             completedLessonsCount >= 12
-              ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.5)] border border-emerald-400 animate-pulse'
-              : 'bg-[#141418] border border-neutral-700 text-emerald-300 hover:border-emerald-500 hover:text-white'
+              ? 'bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white shadow-lg shadow-emerald-950/80 border border-emerald-400 animate-pulse'
+              : 'bg-slate-900 border border-slate-700 text-emerald-300 hover:border-emerald-500 hover:text-white'
           }`}
           title="Xem chứng chỉ tốt nghiệp và xuất hồ sơ tuyển dụng Portfolio"
         >
-          <Award className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+          <Award className="w-4 h-4 text-emerald-400 shrink-0" />
           <span className="hidden sm:inline">Xem Bằng & Hồ Sơ Xin Việc</span>
           <span className="sm:hidden">Bằng & CV</span>
         </button>

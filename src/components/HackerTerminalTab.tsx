@@ -406,20 +406,20 @@ flag{gTF0B1ns_f1nd_r00t_sh3ll_pwn3d}`,
   return (
     <div className="flex-1 w-full h-full min-h-0 overflow-hidden flex flex-col bg-[#000000]">
       {/* Mobile Sub-Navigation Bar */}
-      <div className="lg:hidden px-2.5 py-1.5 bg-[#0a0a0d] border-b border-[#27272a] flex items-center justify-between shrink-0">
-        <div className="flex items-center p-0.5 bg-black border border-neutral-800 rounded-lg w-full">
+      <div className="lg:hidden px-3 py-2 bg-[#0e1424] border-b border-[#1e293b] flex items-center justify-between shrink-0 shadow-sm">
+        <div className="flex items-center p-1 bg-slate-950/80 border border-slate-800 rounded-xl w-full gap-1">
           <button
             onClick={() => {
               sound.playClick();
               setMobileTab('terminal');
             }}
-            className={`flex-1 py-1.5 px-2 text-xs font-semibold rounded-md flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+            className={`flex-1 py-2 px-2.5 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
               mobileTab === 'terminal'
-                ? 'bg-neutral-800 text-white shadow-sm'
-                : 'text-neutral-400 hover:text-white'
+                ? 'bg-emerald-950/80 text-emerald-300 border border-emerald-500/60 shadow-sm'
+                : 'text-slate-400 hover:text-white'
             }`}
           >
-            <Terminal className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+            <Terminal className="w-4 h-4 text-emerald-400 shrink-0" />
             <span>Terminal CLI</span>
           </button>
 
@@ -428,13 +428,13 @@ flag{gTF0B1ns_f1nd_r00t_sh3ll_pwn3d}`,
               sound.playClick();
               setMobileTab('briefing');
             }}
-            className={`flex-1 py-1.5 px-2 text-xs font-semibold rounded-md flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+            className={`flex-1 py-2 px-2.5 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
               mobileTab === 'briefing'
-                ? 'bg-purple-950/80 text-purple-200 border border-purple-600/50 shadow-sm'
-                : 'text-neutral-400 hover:text-white'
+                ? 'bg-purple-950/80 text-purple-200 border border-purple-500/60 shadow-sm'
+                : 'text-slate-400 hover:text-white'
             }`}
           >
-            <Sparkles className="w-3.5 h-3.5 text-purple-400 shrink-0" />
+            <Sparkles className="w-4 h-4 text-purple-400 shrink-0" />
             <span>Gợi Ý & GTFOBins</span>
           </button>
         </div>
@@ -443,23 +443,23 @@ flag{gTF0B1ns_f1nd_r00t_sh3ll_pwn3d}`,
       <div className="flex-1 w-full min-h-0 overflow-hidden flex flex-col lg:flex-row">
         {/* LEFT: XTERM TERMINAL EMULATION */}
         <div
-          className={`w-full lg:w-[68%] h-full flex flex-col border-r border-[#27272a] bg-[#000000] overflow-hidden select-text ${
+          className={`w-full lg:w-[68%] h-full flex flex-col border-r border-[#1e293b] bg-[#000000] overflow-hidden select-text ${
             mobileTab === 'terminal' ? 'flex' : 'hidden lg:flex'
           }`}
         >
         {/* Terminal Window Header Bar */}
-        <div className="h-9 px-3.5 bg-[#0a0a0d] border-b border-[#27272a] flex items-center justify-between shrink-0 select-none">
+        <div className="h-10 px-3.5 bg-[#0a0f1d] border-b border-[#1e293b] flex items-center justify-between shrink-0 select-none">
           {/* Traffic lights + Title */}
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1.5">
-              <div className="w-2.5 h-2.5 rounded-full bg-red-500/80" />
-              <div className="w-2.5 h-2.5 rounded-full bg-amber-500/80" />
-              <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/80" />
+              <div className="w-3 h-3 rounded-full bg-red-500" />
+              <div className="w-3 h-3 rounded-full bg-amber-500" />
+              <div className="w-3 h-3 rounded-full bg-emerald-500" />
             </div>
 
             <div className="flex items-center gap-2">
-              <Terminal className="w-3.5 h-3.5 text-neutral-400" />
-              <span className="text-xs font-mono text-neutral-200 font-semibold">
+              <Terminal className="w-4 h-4 text-slate-400" />
+              <span className="text-xs sm:text-sm font-mono text-slate-200 font-bold truncate">
                 {sessionState === 'target_root'
                   ? 'root@target:/ (Privileged Interactive Shell)'
                   : 'www-data@target:/var/www/html (Low-Privilege Shell)'}
@@ -468,30 +468,30 @@ flag{gTF0B1ns_f1nd_r00t_sh3ll_pwn3d}`,
           </div>
 
           {/* Right Status Badge */}
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2">
             <button
               onClick={() => setSoundEnabled((prev) => !prev)}
-              className={`p-1 rounded text-xs transition-colors ${
-                soundEnabled ? 'text-emerald-400' : 'text-neutral-600'
+              className={`p-1.5 rounded-lg text-xs transition-colors cursor-pointer hover:bg-slate-800 ${
+                soundEnabled ? 'text-emerald-400' : 'text-slate-500'
               }`}
               title="Bật/Tắt âm thanh hiệu ứng"
             >
-              <Volume2 className="w-3.5 h-3.5" />
+              <Volume2 className="w-4 h-4" />
             </button>
 
             <button
               onClick={handleResetChallenge}
-              className="p-1 text-neutral-400 hover:text-neutral-200 transition-colors"
+              className="p-1.5 text-slate-400 hover:text-white transition-colors cursor-pointer rounded-lg hover:bg-slate-800"
               title="Khởi động lại thử thách"
             >
-              <RefreshCw className="w-3.5 h-3.5" />
+              <RefreshCw className="w-4 h-4" />
             </button>
 
             <span
-              className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold ${
+              className={`text-xs font-mono px-2.5 py-0.5 rounded-lg font-bold ${
                 sessionState === 'target_root'
-                  ? 'bg-red-950/80 text-red-300 border border-red-500/80 shadow-[0_0_10px_rgba(239,68,68,0.3)]'
-                  : 'bg-neutral-900 text-neutral-400 border border-neutral-800'
+                  ? 'bg-red-950 text-red-200 border border-red-500/80 shadow-md shadow-red-950/60'
+                  : 'bg-slate-900 text-slate-300 border border-slate-700'
               }`}
             >
               {sessionState === 'target_root' ? '● EUID=0 ROOT' : '○ UID=33 WWW-DATA'}
@@ -501,16 +501,16 @@ flag{gTF0B1ns_f1nd_r00t_sh3ll_pwn3d}`,
 
         {/* Celebration Banner when escalated */}
         {showCelebration && (
-          <div className="p-3 bg-gradient-to-r from-red-950/90 via-red-900/80 to-purple-950/90 border-b border-red-500 text-white flex items-center justify-between shrink-0 shadow-lg animate-pulse select-none">
+          <div className="p-3.5 bg-gradient-to-r from-red-950 via-rose-950 to-purple-950 border-b border-red-500 text-white flex items-center justify-between shrink-0 shadow-lg animate-pulse select-none flex-wrap gap-2">
             <div className="flex items-center gap-2.5">
               <Award className="w-5 h-5 text-amber-300 shrink-0" />
               <div>
-                <div className="text-xs font-extrabold tracking-wide uppercase text-amber-300">
+                <div className="text-xs sm:text-sm font-extrabold tracking-wide uppercase text-amber-300">
                   🎉 PRIVILEGE ESCALATION SUCCESSFUL! YOU ARE ROOT!
                 </div>
-                <div className="text-[11px] text-neutral-200 font-mono">
+                <div className="text-xs text-slate-200 font-mono mt-0.5">
                   Đã leo quyền thành công qua GTFOBins sudo find. Flag:{' '}
-                  <code className="text-amber-200 font-bold">
+                  <code className="text-amber-200 font-bold bg-black/60 px-1.5 py-0.5 rounded border border-amber-500/40">
                     flag&#123;gTF0B1ns_f1nd_r00t_sh3ll_pwn3d&#125;
                   </code>
                 </div>
@@ -519,9 +519,9 @@ flag{gTF0B1ns_f1nd_r00t_sh3ll_pwn3d}`,
 
             <button
               onClick={handleCopyFlag}
-              className="px-2.5 py-1 bg-black/60 hover:bg-black/90 text-amber-200 text-xs font-mono font-semibold rounded border border-amber-400/50 flex items-center gap-1 shrink-0"
+              className="px-3 py-1.5 bg-black/80 hover:bg-black text-amber-200 text-xs font-mono font-bold rounded-lg border border-amber-400/50 flex items-center gap-1.5 shrink-0 cursor-pointer shadow-sm"
             >
-              <Copy className="w-3 h-3" />
+              <Copy className="w-3.5 h-3.5" />
               <span>{copiedFlag ? 'Đã chép!' : 'Copy Flag'}</span>
             </button>
           </div>
@@ -530,31 +530,31 @@ flag{gTF0B1ns_f1nd_r00t_sh3ll_pwn3d}`,
         {/* Xterm Terminal Canvas (Pure Black, Crisp JetBrains Mono) */}
         <div
           onClick={() => inputRef.current?.focus()}
-          className="flex-1 p-4 overflow-y-auto font-mono text-[12px] leading-relaxed bg-[#000000] cursor-text space-y-1.5"
+          className="flex-1 p-3.5 sm:p-5 overflow-y-auto font-mono text-xs sm:text-sm leading-relaxed bg-[#000000] cursor-text space-y-2"
         >
           {lines.map((entry) => (
             <div key={entry.id} className="break-words">
               {entry.type === 'prompt' && (
-                <div className="flex items-center gap-1.5 text-neutral-100 font-semibold">
+                <div className="flex items-center gap-1.5 text-slate-100 font-bold">
                   {entry.isRootPrompt ? (
-                    <span className="text-red-500 font-bold">
+                    <span className="text-red-500 font-extrabold">
                       {entry.promptUser}@{entry.promptHost}:{entry.promptDir}#
                     </span>
                   ) : (
-                    <span className="text-emerald-400 font-bold">
+                    <span className="text-emerald-400 font-extrabold">
                       {entry.promptUser}@{entry.promptHost}:{entry.promptDir}$
                     </span>
                   )}
-                  <span className="text-white ml-1">{entry.text}</span>
+                  <span className="text-white ml-1.5 font-normal">{entry.text}</span>
                 </div>
               )}
 
               {entry.type === 'output' && (
-                <div className="text-neutral-300 whitespace-pre-wrap">{entry.text}</div>
+                <div className="text-slate-200 whitespace-pre-wrap">{entry.text}</div>
               )}
 
               {entry.type === 'error' && (
-                <div className="text-red-400 whitespace-pre-wrap font-medium">{entry.text}</div>
+                <div className="text-red-400 whitespace-pre-wrap font-semibold">{entry.text}</div>
               )}
 
               {entry.type === 'success' && (
@@ -562,11 +562,11 @@ flag{gTF0B1ns_f1nd_r00t_sh3ll_pwn3d}`,
               )}
 
               {entry.type === 'system' && (
-                <div className="text-blue-400 whitespace-pre-wrap italic">{entry.text}</div>
+                <div className="text-cyan-400 whitespace-pre-wrap italic">{entry.text}</div>
               )}
 
               {entry.type === 'banner' && (
-                <div className="my-2 p-2.5 bg-red-950/40 border border-red-500 rounded text-red-200 whitespace-pre-wrap font-bold">
+                <div className="my-2 p-3 bg-red-950/60 border border-red-500 rounded-xl text-red-200 whitespace-pre-wrap font-bold">
                   {entry.text}
                 </div>
               )}
@@ -574,13 +574,13 @@ flag{gTF0B1ns_f1nd_r00t_sh3ll_pwn3d}`,
           ))}
 
           {/* Active Command Input Line */}
-          <form onSubmit={handleCommandSubmit} className="flex items-center gap-1.5 pt-1">
+          <form onSubmit={handleCommandSubmit} className="flex items-center gap-1.5 pt-1.5">
             {sessionState === 'target_root' ? (
-              <span className="text-red-500 font-bold select-none shrink-0">
+              <span className="text-red-500 font-bold select-none shrink-0 text-xs sm:text-sm">
                 root@target:/#{' '}
               </span>
             ) : (
-              <span className="text-emerald-400 font-bold select-none shrink-0">
+              <span className="text-emerald-400 font-bold select-none shrink-0 text-xs sm:text-sm">
                 www-data@target:{currentDir}${' '}
               </span>
             )}
@@ -592,7 +592,7 @@ flag{gTF0B1ns_f1nd_r00t_sh3ll_pwn3d}`,
                 value={commandInput}
                 onChange={(e) => setCommandInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                className="w-full bg-transparent outline-none text-white font-mono text-[12px] caret-transparent"
+                className="w-full bg-transparent outline-none text-white font-mono text-xs sm:text-sm caret-transparent"
                 autoFocus
                 spellCheck={false}
                 autoCapitalize="off"
@@ -601,7 +601,7 @@ flag{gTF0B1ns_f1nd_r00t_sh3ll_pwn3d}`,
 
               {/* Classic Xterm blinking cursor (#22c55e) */}
               <span
-                className="w-2 h-4 bg-[#22c55e] inline-block animate-pulse ml-0.5 select-none"
+                className="w-2.5 h-4 bg-[#22c55e] inline-block animate-pulse ml-0.5 select-none"
                 style={{ verticalAlign: 'middle' }}
               />
             </div>
@@ -610,9 +610,9 @@ flag{gTF0B1ns_f1nd_r00t_sh3ll_pwn3d}`,
           <div ref={terminalEndRef} />
         </div>
 
-        {/* Quick Clickable Command Bar */}
-        <div className="px-3 py-1.5 bg-[#0a0a0d] border-t border-[#27272a] flex items-center gap-1.5 overflow-x-auto shrink-0 select-none">
-          <span className="text-[10px] font-mono text-neutral-500 shrink-0">Lệnh mẫu nhanh:</span>
+        {/* Quick Clickable Command Bar (Virtual Keys for Mobile) */}
+        <div className="px-3 sm:px-4 py-2 bg-[#0a0f1d] border-t border-[#1e293b] flex items-center gap-2 overflow-x-auto shrink-0 select-none">
+          <span className="text-xs font-mono font-bold text-slate-400 shrink-0">Lệnh mẫu nhanh:</span>
           {[
             'help',
             'whoami',
@@ -628,7 +628,7 @@ flag{gTF0B1ns_f1nd_r00t_sh3ll_pwn3d}`,
               key={cmd}
               type="button"
               onClick={() => handleQuickInsert(cmd)}
-              className="px-2 py-0.5 rounded bg-[#121215] border border-neutral-800 text-[11px] font-mono text-neutral-300 hover:border-emerald-500 hover:text-emerald-300 transition-colors whitespace-nowrap"
+              className="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-xs font-mono font-bold text-slate-200 hover:border-emerald-500 hover:text-emerald-300 transition-colors whitespace-nowrap cursor-pointer shadow-sm active:scale-95"
             >
               {cmd}
             </button>
@@ -638,29 +638,29 @@ flag{gTF0B1ns_f1nd_r00t_sh3ll_pwn3d}`,
 
       {/* RIGHT: Socratic Guidance & GTFOBins Inspector Panel (32% on desktop) */}
       <div
-        className={`w-full lg:w-[32%] h-full flex flex-col bg-[#0c0c0e] overflow-y-auto p-4 space-y-4 select-none ${
+        className={`w-full lg:w-[32%] h-full flex flex-col bg-[#0c1222] overflow-y-auto p-4 space-y-4 select-none ${
           mobileTab === 'briefing' ? 'flex' : 'hidden lg:flex'
         }`}
       >
         {/* Mission Briefing */}
-        <div className="p-3.5 rounded-lg border border-[#27272a] bg-[#121215]">
-          <div className="flex items-center gap-2 text-xs font-bold text-neutral-100 uppercase tracking-wide mb-1.5">
+        <div className="p-4 rounded-xl border border-[#1e293b] bg-[#0f172a] shadow-sm">
+          <div className="flex items-center gap-2 text-xs sm:text-sm font-bold text-slate-100 uppercase tracking-wide mb-2">
             <ShieldAlert className="w-4 h-4 text-emerald-400" />
             <span>Thử Thách: Leo Thang Đặc Quyền Linux</span>
           </div>
 
-          <p className="text-xs text-neutral-400 leading-relaxed">
+          <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
             Bạn đang kiểm soát phiên làm việc của người dùng dịch vụ web{' '}
-            <code className="text-emerald-300 font-mono">www-data</code>. Hãy phát hiện tệp nhị phân có đặc quyền thực thi cao và leo lên làm chủ hoàn toàn máy chủ!
+            <code className="text-emerald-300 font-mono font-bold">www-data</code>. Hãy phát hiện tệp nhị phân có đặc quyền thực thi cao và leo lên làm chủ hoàn toàn máy chủ!
           </p>
 
-          <div className="mt-3 pt-2.5 border-t border-neutral-800 space-y-1.5 text-[11px] font-mono">
+          <div className="mt-3 pt-3 border-t border-slate-800 space-y-2 text-xs font-mono">
             <div className="flex items-center justify-between">
-              <span className="text-neutral-500">Mục tiêu:</span>
-              <span className="text-neutral-200">Đạt quyền root (UID=0)</span>
+              <span className="text-slate-400">Mục tiêu:</span>
+              <span className="text-slate-200 font-bold">Đạt quyền root (UID=0)</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-neutral-500">Trạng thái hiện tại:</span>
+              <span className="text-slate-400">Trạng thái hiện tại:</span>
               <span
                 className={`font-bold ${
                   sessionState === 'target_root' ? 'text-red-400' : 'text-emerald-400'
@@ -673,61 +673,61 @@ flag{gTF0B1ns_f1nd_r00t_sh3ll_pwn3d}`,
         </div>
 
         {/* Socratic Hint & GTFOBins Helper Panel */}
-        <div className="p-3.5 rounded-lg border border-purple-900/40 bg-purple-950/20 space-y-2.5">
-          <div className="flex items-center gap-2 text-xs font-bold text-purple-300 uppercase tracking-wide">
+        <div className="p-4 rounded-xl border-2 border-purple-500/40 bg-purple-950/20 space-y-3 shadow-md">
+          <div className="flex items-center gap-2 text-xs sm:text-sm font-bold text-purple-300 uppercase tracking-wide">
             <Sparkles className="w-4 h-4 text-purple-400" />
             <span>Gợi Ý Socratic & Kho Cứu Sinh GTFOBins</span>
           </div>
 
-          <p className="text-xs text-neutral-300 leading-relaxed">
+          <p className="text-xs sm:text-sm text-slate-200 leading-relaxed">
             Khi quản trị viên Linux sơ suất cấp quyền <code className="text-purple-300 font-mono font-bold">NOPASSWD</code> cho các tệp nhị phân có khả năng thực thi lệnh ngoài, người dùng bình thường có thể mượn quyền đó để spawn shell root.
           </p>
 
-          <div className="p-2.5 rounded bg-black/60 border border-purple-800/40 font-mono text-[11px] text-purple-200 space-y-1.5">
-            <div className="text-neutral-400 text-[10px]">Cú pháp khai thác GTFOBins cho find:</div>
-            <div className="p-1.5 bg-neutral-900 rounded text-emerald-400 font-bold select-text">
+          <div className="p-3 rounded-xl bg-black/70 border border-purple-800/40 font-mono text-xs text-purple-200 space-y-2">
+            <div className="text-slate-400 text-xs font-bold">Cú pháp khai thác GTFOBins cho find:</div>
+            <div className="p-2 bg-slate-900 rounded-lg text-emerald-400 font-bold select-text text-xs sm:text-sm border border-slate-800">
               sudo find . -exec /bin/sh \;
             </div>
-            <div className="text-[10px] text-neutral-400">
+            <div className="text-xs text-slate-300 leading-relaxed">
               Giải thích: Tham số <code className="text-purple-300">-exec</code> của find chạy lệnh với tư cách người gọi sudo (ở đây là root). Khi gọi <code className="text-purple-300">/bin/sh</code>, một tiến trình shell root mới sẽ được sinh ra ngay lập tức!
             </div>
           </div>
 
           <button
             onClick={() => handleQuickInsert('sudo find . -exec /bin/sh \\;')}
-            className="w-full py-1.5 px-3 bg-purple-600 hover:bg-purple-500 text-white rounded text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+            className="w-full h-11 px-4 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg shadow-purple-950/60 active:scale-[0.99]"
           >
-            <Zap className="w-3.5 h-3.5" />
+            <Zap className="w-4 h-4" />
             <span>Nạp Lệnh Khai Thác Nhanh Vào Terminal</span>
           </button>
         </div>
 
         {/* Flag Card */}
-        <div className="p-3.5 rounded-lg border border-[#27272a] bg-[#121215] space-y-2">
-          <div className="flex items-center gap-2 text-xs font-bold text-neutral-100 uppercase tracking-wide">
+        <div className="p-4 rounded-xl border border-[#1e293b] bg-[#0f172a] space-y-2.5 shadow-sm">
+          <div className="flex items-center gap-2 text-xs sm:text-sm font-bold text-slate-100 uppercase tracking-wide">
             <Award className="w-4 h-4 text-amber-400" />
             <span>Cờ Chiến Thắng (CTF Flag)</span>
           </div>
 
           {sessionState === 'target_root' ? (
-            <div className="p-2.5 rounded bg-amber-950/40 border border-amber-500/50 space-y-1.5">
-              <div className="text-[11px] text-amber-300 font-semibold flex items-center gap-1.5">
-                <CheckCircle2 className="w-3.5 h-3.5 text-amber-400" />
+            <div className="p-3 rounded-xl bg-amber-950/40 border border-amber-500/50 space-y-2">
+              <div className="text-xs sm:text-sm text-amber-300 font-bold flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-amber-400" />
                 <span>Bạn đã tìm thấy flag bí mật:</span>
               </div>
-              <div className="p-2 bg-black rounded font-mono text-xs text-amber-200 font-bold break-all border border-amber-900/60 select-text">
+              <div className="p-2.5 bg-black rounded-lg font-mono text-xs sm:text-sm text-amber-200 font-bold break-all border border-amber-900/60 select-text">
                 flag&#123;gTF0B1ns_f1nd_r00t_sh3ll_pwn3d&#125;
               </div>
               <button
                 onClick={handleCopyFlag}
-                className="w-full mt-1 py-1 bg-amber-600 hover:bg-amber-500 text-black text-xs font-bold rounded transition-colors"
+                className="w-full h-10 mt-1 bg-amber-500 hover:bg-amber-400 text-black text-xs sm:text-sm font-extrabold rounded-xl transition-all cursor-pointer shadow-md"
               >
                 {copiedFlag ? 'Đã sao chép vào bộ nhớ!' : 'Sao Chép Flag'}
               </button>
             </div>
           ) : (
-            <div className="text-xs text-neutral-500 italic">
-              Flag được giấu trong tệp tin <code className="text-neutral-400">/root/flag.txt</code>. Hãy hoàn thành việc leo quyền lên root để mở khóa!
+            <div className="text-xs sm:text-sm text-slate-400 italic">
+              Flag được giấu trong tệp tin <code className="text-slate-300 font-bold">/root/flag.txt</code>. Hãy hoàn thành việc leo quyền lên root để mở khóa!
             </div>
           )}
         </div>

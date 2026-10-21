@@ -49,7 +49,7 @@ export default function App() {
   };
 
   return (
-    <div className="w-full h-dvh min-h-dvh flex flex-col bg-[#09090b] text-[#f4f4f5]">
+    <div className="w-full h-dvh min-h-dvh flex flex-col bg-[#0b0f19] text-[#f1f5f9]">
       {/* Top Header Bar */}
       <Header
         appMode={appMode}
@@ -70,14 +70,14 @@ export default function App() {
         ) : (
           <div className="flex-1 w-full h-full flex flex-col overflow-hidden min-h-0">
             {/* Free Sandbox Sub-Navbar */}
-            <div className="h-10 px-2 sm:px-4 bg-[#111114] border-b border-[#27272a] flex items-center justify-between gap-2 shrink-0">
-              <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-1">
+            <div className="h-12 px-2.5 sm:px-4 bg-[#0e1424] border-b border-[#1e293b] flex items-center justify-between gap-2 shrink-0 shadow-sm">
+              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
                 <button
                   onClick={() => handleSandboxTabClick('sandbox')}
-                  className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded text-xs font-semibold transition-colors whitespace-nowrap cursor-pointer ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                     activeSandboxTab === 'sandbox'
-                      ? 'bg-[#27272a] text-white shadow-sm'
-                      : 'text-neutral-400 hover:text-white'
+                      ? 'bg-amber-500/20 text-amber-300 border border-amber-500/50 shadow-sm shadow-amber-950/40'
+                      : 'text-slate-400 hover:text-white hover:bg-slate-900/60'
                   }`}
                 >
                   <Zap className="w-3.5 h-3.5 text-amber-400 shrink-0" />
@@ -86,10 +86,10 @@ export default function App() {
 
                 <button
                   onClick={() => handleSandboxTabClick('packets')}
-                  className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded text-xs font-semibold transition-colors whitespace-nowrap cursor-pointer ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                     activeSandboxTab === 'packets'
-                      ? 'bg-[#27272a] text-white shadow-sm'
-                      : 'text-neutral-400 hover:text-white'
+                      ? 'bg-blue-500/20 text-blue-300 border border-blue-500/50 shadow-sm shadow-blue-950/40'
+                      : 'text-slate-400 hover:text-white hover:bg-slate-900/60'
                   }`}
                 >
                   <Activity className="w-3.5 h-3.5 text-blue-400 shrink-0" />
@@ -98,37 +98,37 @@ export default function App() {
 
                 <button
                   onClick={() => handleSandboxTabClick('terminal')}
-                  className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded text-xs font-semibold transition-colors whitespace-nowrap cursor-pointer ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                     activeSandboxTab === 'terminal'
-                      ? 'bg-[#27272a] text-white shadow-sm'
-                      : 'text-neutral-400 hover:text-white'
+                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/50 shadow-sm shadow-emerald-950/40'
+                      : 'text-slate-400 hover:text-white hover:bg-slate-900/60'
                   }`}
                 >
-                  <Terminal className="w-3.5 h-3.5 text-purple-400 shrink-0" />
+                  <Terminal className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                   <span>Hacker Terminal</span>
                 </button>
 
                 <button
                   onClick={() => handleSandboxTabClick('soc')}
-                  className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded text-xs font-semibold transition-colors whitespace-nowrap cursor-pointer ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                     activeSandboxTab === 'soc'
-                      ? 'bg-[#27272a] text-white shadow-sm'
-                      : 'text-neutral-400 hover:text-white'
+                      ? 'bg-rose-500/20 text-rose-300 border border-rose-500/50 shadow-sm shadow-rose-950/40'
+                      : 'text-slate-400 hover:text-white hover:bg-slate-900/60'
                   }`}
                 >
-                  <Shield className="w-3.5 h-3.5 text-red-400 shrink-0" />
+                  <Shield className="w-3.5 h-3.5 text-rose-400 shrink-0" />
                   <span>SOC Log Matrix</span>
                 </button>
 
                 <button
                   onClick={() => handleSandboxTabClick('roadmap')}
-                  className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded text-xs font-semibold transition-colors whitespace-nowrap cursor-pointer ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                     activeSandboxTab === 'roadmap'
-                      ? 'bg-[#27272a] text-white shadow-sm'
-                      : 'text-neutral-400 hover:text-white'
+                      ? 'bg-teal-500/20 text-teal-300 border border-teal-500/50 shadow-sm shadow-teal-950/40'
+                      : 'text-slate-400 hover:text-white hover:bg-slate-900/60'
                   }`}
                 >
-                  <Compass className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                  <Compass className="w-3.5 h-3.5 text-teal-400 shrink-0" />
                   <span>90-Day Roadmap</span>
                 </button>
               </div>
@@ -138,10 +138,10 @@ export default function App() {
                   sound.playClick();
                   setIsCheatSheetOpen(true);
                 }}
-                className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1 text-xs font-medium text-neutral-300 bg-neutral-900 border border-neutral-800 rounded hover:text-white hover:border-neutral-700 shrink-0 cursor-pointer"
+                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-semibold text-slate-200 bg-slate-900 border border-slate-700 rounded-lg hover:text-white hover:border-slate-500 shrink-0 cursor-pointer shadow-sm"
                 title="Mở bảng tra cứu nhanh phím tắt và kỹ thuật bảo mật"
               >
-                <BookOpen className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+                <BookOpen className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                 <span className="hidden sm:inline">Cheatsheet (?)</span>
                 <span className="sm:hidden">(?)</span>
               </button>

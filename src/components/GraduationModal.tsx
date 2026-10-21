@@ -134,18 +134,18 @@ export const GraduationModal: React.FC<GraduationModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-3 md:p-6 overflow-y-auto">
-      <div className="w-full max-w-4xl bg-[#121215] border border-neutral-700 rounded-xl shadow-2xl flex flex-col max-h-[92vh] overflow-hidden">
+    <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-2.5 sm:p-6 overflow-y-auto">
+      <div className="w-full max-w-4xl bg-[#0f172a] border border-slate-700 rounded-2xl shadow-2xl flex flex-col max-h-[92vh] overflow-hidden">
         {/* Header Bar */}
-        <div className="px-3 sm:px-5 py-3 bg-[#18181c] border-b border-[#27272a] flex items-center justify-between shrink-0 select-none">
-          <div className="flex items-center gap-2 sm:gap-2.5">
-            <div className="w-7 h-7 rounded bg-emerald-950/80 border border-emerald-500/50 flex items-center justify-center text-emerald-400 shrink-0">
+        <div className="px-4 sm:px-5 py-3.5 bg-[#0e1628] border-b border-slate-800 flex items-center justify-between shrink-0 select-none">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-emerald-950/90 border border-emerald-500/60 flex items-center justify-center text-emerald-400 shrink-0 shadow-sm">
               <Award className="w-4 h-4 text-emerald-400" />
             </div>
             <div>
-              <h3 className="text-xs sm:text-sm font-bold text-neutral-100 flex items-center gap-1.5 sm:gap-2">
-                Hồ Sơ Tốt Nghiệp & Chứng Chỉ
-                <span className="text-[10px] font-mono bg-emerald-950/80 text-emerald-300 border border-emerald-600/60 px-1.5 py-0.5 rounded hidden sm:inline">
+              <h3 className="text-xs sm:text-sm font-extrabold text-white flex items-center gap-2">
+                Hồ Sơ Tốt Nghiệp & Chứng Chỉ Nghề
+                <span className="text-[10px] font-mono bg-emerald-950/80 text-emerald-300 border border-emerald-500/60 px-2 py-0.5 rounded-md font-bold hidden sm:inline">
                   JOB-READY
                 </span>
               </h3>
@@ -155,27 +155,27 @@ export const GraduationModal: React.FC<GraduationModalProps> = ({
           <div className="flex items-center gap-2">
             <button
               onClick={onClose}
-              className="p-1.5 text-neutral-400 hover:text-white rounded transition-colors cursor-pointer"
+              className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
             >
-              <X className="w-4 h-4" />
+              <X className="w-5 h-5" />
             </button>
           </div>
         </div>
 
         {/* Navigation Tabs */}
-        <div className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 bg-[#0d0d10] border-b border-[#27272a] text-xs font-mono shrink-0 overflow-x-auto no-scrollbar">
+        <div className="flex items-center gap-2 px-3 sm:px-5 py-2.5 bg-[#090f1d] border-b border-slate-800 text-xs font-mono shrink-0 overflow-x-auto no-scrollbar">
           <button
             onClick={() => {
               sound.playClick();
               setActiveTab('cert');
             }}
-            className={`px-2.5 sm:px-3 py-1.5 rounded transition-colors flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
+            className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer text-xs font-bold ${
               activeTab === 'cert'
-                ? 'bg-neutral-800 text-white font-bold shadow-sm'
-                : 'text-neutral-400 hover:text-neutral-200'
+                ? 'bg-slate-800 text-white shadow-sm border border-slate-600'
+                : 'text-slate-400 hover:text-white hover:bg-slate-900'
             }`}
           >
-            <Award className="w-3.5 h-3.5 text-emerald-400" />
+            <Award className="w-4 h-4 text-emerald-400" />
             <span>1. Chứng Chỉ</span>
           </button>
 
@@ -184,13 +184,13 @@ export const GraduationModal: React.FC<GraduationModalProps> = ({
               sound.playClick();
               setActiveTab('skills');
             }}
-            className={`px-2.5 sm:px-3 py-1.5 rounded transition-colors flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
+            className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer text-xs font-bold ${
               activeTab === 'skills'
-                ? 'bg-neutral-800 text-white font-bold shadow-sm'
-                : 'text-neutral-400 hover:text-neutral-200'
+                ? 'bg-slate-800 text-white shadow-sm border border-slate-600'
+                : 'text-slate-400 hover:text-white hover:bg-slate-900'
             }`}
           >
-            <TrendingUp className="w-3.5 h-3.5 text-blue-400" />
+            <TrendingUp className="w-4 h-4 text-blue-400" />
             <span>2. Radar Năng Lực</span>
           </button>
 
@@ -199,36 +199,36 @@ export const GraduationModal: React.FC<GraduationModalProps> = ({
               sound.playClick();
               setActiveTab('portfolio');
             }}
-            className={`px-2.5 sm:px-3 py-1.5 rounded transition-colors flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
+            className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer text-xs font-bold ${
               activeTab === 'portfolio'
-                ? 'bg-neutral-800 text-white font-bold shadow-sm'
-                : 'text-neutral-400 hover:text-neutral-200'
+                ? 'bg-slate-800 text-white shadow-sm border border-slate-600'
+                : 'text-slate-400 hover:text-white hover:bg-slate-900'
             }`}
           >
-            <FileText className="w-3.5 h-3.5 text-amber-400" />
+            <FileText className="w-4 h-4 text-amber-400" />
             <span>3. Bộ Báo Cáo</span>
           </button>
         </div>
 
         {/* Modal Body Viewport */}
-        <div className="flex-1 p-5 overflow-y-auto space-y-4">
+        <div className="flex-1 p-3.5 sm:p-5 overflow-y-auto space-y-4">
           {/* TAB 1: CERTIFICATE VIEW */}
           {activeTab === 'cert' && (
             <div className="space-y-4">
               {/* Student Name Quick Editor */}
-              <div className="flex items-center justify-between p-3 rounded-lg bg-black/40 border border-neutral-800 text-xs">
-                <div className="flex items-center gap-2 text-neutral-300">
-                  <User className="w-4 h-4 text-emerald-400" />
-                  <span>Họ tên trên chứng chỉ:</span>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3.5 rounded-xl bg-slate-950/70 border border-slate-800 text-xs gap-2">
+                <div className="flex items-center gap-2 text-slate-200">
+                  <User className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <span className="font-bold">Họ tên trên chứng chỉ:</span>
                   <input
                     type="text"
                     value={studentName}
                     onChange={(e) => setStudentName(e.target.value)}
-                    className="px-2 py-1 bg-neutral-900 border border-neutral-700 rounded text-neutral-100 font-bold focus:outline-none focus:border-emerald-500"
+                    className="h-9 px-3 bg-slate-900 border border-slate-700 rounded-lg text-white font-bold focus:outline-none focus:border-emerald-500 text-xs sm:text-sm"
                     placeholder="Nhập họ và tên của bạn..."
                   />
                 </div>
-                <span className="text-[11px] font-mono text-neutral-500 hidden sm:inline">
+                <span className="text-xs font-mono text-slate-400 hidden sm:inline">
                   Tên sẽ cập nhật trực tiếp trên chứng chỉ bên dưới
                 </span>
               </div>
@@ -438,25 +438,25 @@ export const GraduationModal: React.FC<GraduationModalProps> = ({
         </div>
 
         {/* Modal Action Footer */}
-        <div className="px-3 sm:px-5 py-3 bg-[#18181c] border-t border-[#27272a] flex flex-wrap items-center justify-between gap-2 sm:gap-3 shrink-0">
-          <div className="text-xs font-mono text-neutral-400">
-            Tiến độ: <strong className="text-emerald-400">{completedLessonsCount}/12 Bài Học</strong>
+        <div className="px-4 sm:px-5 py-3.5 bg-[#0e1628] border-t border-slate-800 flex flex-wrap items-center justify-between gap-3 shrink-0 shadow-sm">
+          <div className="text-xs font-mono text-slate-300">
+            Tiến độ: <strong className="text-emerald-400 font-bold">{completedLessonsCount}/12 Bài Học</strong>
           </div>
 
           <div className="flex items-center gap-2">
             <button
               onClick={handlePrint}
-              className="px-2.5 sm:px-3 py-1.5 bg-neutral-800 hover:bg-neutral-700 text-neutral-200 rounded text-xs font-medium border border-neutral-700 flex items-center gap-1.5 transition-colors cursor-pointer"
+              className="h-10 px-3.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs sm:text-sm font-bold border border-slate-700 flex items-center gap-1.5 transition-colors cursor-pointer shadow-sm active:scale-95"
             >
-              <Printer className="w-3.5 h-3.5" />
+              <Printer className="w-4 h-4" />
               <span>In PDF</span>
             </button>
 
             <button
               onClick={handleExportMarkdownPortfolio}
-              className="px-3 sm:px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer shadow-lg"
+              className="h-10 px-4 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white rounded-xl text-xs sm:text-sm font-extrabold flex items-center gap-1.5 transition-all cursor-pointer shadow-lg shadow-emerald-950/60 active:scale-95"
             >
-              <Download className="w-3.5 h-3.5" />
+              <Download className="w-4 h-4" />
               <span className="hidden sm:inline">Tải Báo Cáo Markdown (.MD) Đính Kèm CV</span>
               <span className="sm:hidden">Tải Markdown (.MD)</span>
             </button>
