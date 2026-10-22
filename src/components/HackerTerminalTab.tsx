@@ -53,10 +53,10 @@ interface BridgeInfo {
 }
 
 export const HackerTerminalTab: React.FC = () => {
-  // Mode selection: 'real_bash' (actual local laptop bash via WebSocket bridge) vs 'simulated' (web sandbox)
-  const [terminalMode, setTerminalMode] = useState<'real_bash' | 'simulated'>('real_bash');
+  // Default to built-in frictionless simulated sandbox for optimal mobile learning UX
+  const [terminalMode, setTerminalMode] = useState<'real_bash' | 'simulated'>('simulated');
   
-  // Bridge host management (can be 127.0.0.1:3001, 192.168.0.109:3001, or tunnel URL)
+  // Bridge host management (preserved for future use)
   const [bridgeHost, setBridgeHost] = useState<string>(() => {
     try {
       const saved = localStorage.getItem('cybersec_bridge_host');
@@ -64,18 +64,11 @@ export const HackerTerminalTab: React.FC = () => {
     } catch {
       // Ignore
     }
-    // Default smart guess
-    if (typeof window !== 'undefined') {
-      const currentHost = window.location.hostname;
-      if (currentHost && currentHost !== 'localhost' && currentHost !== '127.0.0.1' && !currentHost.includes('vercel.app')) {
-        return `${currentHost}:3001`;
-      }
-    }
     return '127.0.0.1:3001';
   });
 
-  // Real bash bridge state
-  const [bridgeStatus, setBridgeStatus] = useState<'checking' | 'connected' | 'disconnected'>('checking');
+  // Real bash bridge state (preserved)
+  const [bridgeStatus, setBridgeStatus] = useState<'checking' | 'connected' | 'disconnected'>('disconnected');
   const [bridgeInfo, setBridgeInfo] = useState<BridgeInfo | null>(null);
   const [copiedServerCmd, setCopiedServerCmd] = useState<boolean>(false);
   const [isMobileModalOpen, setIsMobileModalOpen] = useState<boolean>(false);
@@ -94,17 +87,22 @@ export const HackerTerminalTab: React.FC = () => {
   const terminalEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Initial terminal state
+  // Initial terminal state - Clean and focused for learners
   const [lines, setLines] = useState<TerminalLine[]>([
     {
       id: 'init-1',
       type: 'system',
-      text: 'CyberSecYuta Terminal [Real Host Bash & Security Sandbox]',
+      text: 'Linux target.local 5.4.0-150-generic #167-Ubuntu SMP Mon May 15 17:35:05 UTC 2026 x86_64',
     },
     {
       id: 'init-2',
       type: 'system',
-      text: 'Đang khởi tạo phiên làm việc và kiểm tra kết nối với Bash máy tính cá nhân...',
+      text: 'Phiên làm việc: www-data@target:/var/www/html (Quyền hạn cơ bản).',
+    },
+    {
+      id: 'init-3',
+      type: 'output',
+      text: 'Mẹo: Gõ "whoami", "id", hoặc "sudo -l" để trinh sát và tìm cách leo quyền root!',
     },
   ]);
 
@@ -555,93 +553,21 @@ drwxr-xr-x 3 root     root     4096 Oct 22 00:00 ..
           </span>
         </div>
 
-        {/* Action Controls Group */}
+        {/* Clean Status Badge (Distraction-free for mobile learners) */}
         <div className="flex items-center gap-2">
-          {/* Mobile / Laptop Connect Button */}
-          <button
-            onClick={() => {
-              sound.playClick();
-              setIsMobileModalOpen(true);
-            }}
-            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
-              bridgeStatus === 'connected'
-                ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/30'
-                : 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40 hover:bg-cyan-500/30'
-            }`}
-            title="Kết nối bash với điện thoại thông minh qua QR hoặc Wi-Fi IP"
-          >
-            <Smartphone className="w-3.5 h-3.5 text-cyan-400" />
-            <span className="hidden sm:inline">📱 Kết Nối Điện Thoại</span>
-            <span className="sm:hidden">📱 Kết Nối Máy</span>
-            <span
-              className={`w-2 h-2 rounded-full ${
-                bridgeStatus === 'connected' ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'
-              }`}
-            />
-          </button>
-
-          {/* Mode Switcher Pill */}
-          <div className="flex items-center gap-1 p-1 bg-slate-900/90 rounded-lg border border-slate-800">
-            <button
-              onClick={() => {
-                setTerminalMode('real_bash');
-                if (bridgeStatus === 'disconnected') checkAndConnectBridge();
-              }}
-              className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium transition-all ${
-                terminalMode === 'real_bash'
-                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              <Laptop className="w-3.5 h-3.5" />
-              <span className="hidden md:inline">Bash Thật</span>
-              <span className="md:hidden">Thật</span>
-            </button>
-
-            <button
-              onClick={() => setTerminalMode('simulated')}
-              className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium transition-all ${
-                terminalMode === 'simulated'
-                  ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              <Globe className="w-3.5 h-3.5" />
-              <span className="hidden md:inline">Sandbox</span>
-              <span className="md:hidden">Giả Lập</span>
-            </button>
-          </div>
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-xs font-mono font-medium">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span>Sandbox Thực Hành Trực Tiếp</span>
+          </span>
         </div>
+
+        {/* 
+          [GHI CHÚ]: Chức năng Remote Terminal & Cloudflare Tunnel tạm thời comment theo yêu cầu:
+          - Nút kết nối điện thoại & QR Code
+          - Switcher chế độ Bash thật vs Sandbox
+          - Banner cảnh báo daemon
+        */}
       </div>
-
-      {/* Mobile Notice Bar (Prompting user to connect phone to laptop) */}
-      {terminalMode === 'real_bash' && bridgeStatus === 'disconnected' && (
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 px-4 py-2.5 bg-amber-950/40 border-b border-amber-800/40 text-xs text-amber-200 shrink-0">
-          <div className="flex items-center gap-2">
-            <Smartphone className="w-4 h-4 text-amber-400 shrink-0" />
-            <span>
-              <strong>Dùng trên điện thoại:</strong> Bấm nút <strong>"📱 Kết Nối Điện Thoại"</strong> hoặc quét mã QR Wi-Fi để dùng Bash của máy tính!
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <button
-              onClick={() => setIsMobileModalOpen(true)}
-              className="flex items-center justify-center gap-1 px-2.5 py-1 rounded bg-cyan-600 hover:bg-cyan-500 text-white font-semibold transition-colors"
-            >
-              <QrCode className="w-3.5 h-3.5" />
-              <span>Mở Mã QR & IP</span>
-            </button>
-            <button
-              onClick={() => checkAndConnectBridge()}
-              className="flex items-center justify-center gap-1 px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-colors"
-            >
-              <RefreshCw className="w-3.5 h-3.5" />
-              <span>Thử lại</span>
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* Terminal Output Area */}
       <div className="flex-1 overflow-y-auto p-4 font-mono text-xs sm:text-sm space-y-1.5 bg-[#070b14] select-text">
@@ -696,16 +622,18 @@ drwxr-xr-x 3 root     root     4096 Oct 22 00:00 ..
       </div>
 
       {/* Quick Action Chips Bar (Thumb-friendly on mobile) */}
-      <div className="flex items-center gap-1.5 px-3 py-2 bg-[#0d1322] border-t border-slate-800/80 overflow-x-auto no-scrollbar shrink-0">
-        <span className="text-[11px] font-mono text-slate-500 uppercase tracking-wider shrink-0 mr-1 flex items-center gap-1">
-          <Zap className="w-3 h-3 text-amber-400" /> Phím nhanh:
+      <div className="flex items-center gap-2 px-3 py-2 bg-[#0d1322] border-t border-slate-800/80 overflow-x-auto no-scrollbar shrink-0">
+        <span className="text-[11px] font-mono text-slate-400 uppercase tracking-wider shrink-0 mr-1 flex items-center gap-1 font-semibold">
+          <Zap className="w-3.5 h-3.5 text-amber-400" /> Phím nhanh:
         </span>
         {[
-          terminalMode === 'real_bash' ? 'ls -la' : 'whoami',
-          terminalMode === 'real_bash' ? 'whoami' : 'id',
-          terminalMode === 'real_bash' ? 'uname -a' : 'sudo -l',
-          terminalMode === 'real_bash' ? 'pwd' : 'sudo find . -exec /bin/sh \\;',
-          terminalMode === 'real_bash' ? 'ip a' : 'cat /root/flag.txt',
+          'whoami',
+          'id',
+          'ls -la',
+          'cat /etc/passwd',
+          'sudo -l',
+          'sudo find . -exec /bin/sh \\;',
+          'cat /root/flag.txt',
           'clear',
         ].map((quickCmd) => (
           <button
@@ -714,7 +642,7 @@ drwxr-xr-x 3 root     root     4096 Oct 22 00:00 ..
               setCommandInput(quickCmd);
               inputRef.current?.focus();
             }}
-            className="px-2.5 py-1 rounded bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white font-mono text-xs border border-slate-700/60 whitespace-nowrap transition-colors"
+            className="min-h-[36px] px-3 py-1.5 rounded-lg bg-slate-800/90 hover:bg-slate-700 active:scale-95 text-slate-200 hover:text-white font-mono text-xs border border-slate-700 whitespace-nowrap transition-all shadow-sm cursor-pointer"
           >
             {quickCmd}
           </button>
