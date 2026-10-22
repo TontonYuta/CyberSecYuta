@@ -47,6 +47,9 @@ interface BridgeInfo {
   lanIp?: string;
   mobileUrl?: string;
   wsUrl?: string;
+  tunnelUrl?: string;
+  tunnelWsUrl?: string;
+  isTunnelActive?: boolean;
 }
 
 export const HackerTerminalTab: React.FC = () => {
@@ -670,6 +673,7 @@ drwxr-xr-x 3 root     root     4096 Oct 22 00:00 ..
         isOpen={isMobileModalOpen}
         onClose={() => setIsMobileModalOpen(false)}
         detectedLanIp={bridgeInfo?.lanIp || '192.168.0.109'}
+        detectedTunnelUrl={bridgeInfo?.tunnelUrl}
         currentBridgeHost={bridgeHost}
         onSaveBridgeHost={handleSaveBridgeHost}
         onTestConnection={handleTestConnection}

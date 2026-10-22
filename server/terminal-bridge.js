@@ -9,9 +9,10 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const DIST_DIR = path.resolve(__dirname, '../dist');
+const TUNNEL_INFO_FILE = path.resolve(__dirname, '.tunnel-info.json');
 
 const PORT = 3001;
-const HOST = '0.0.0.0'; // Binds to all network interfaces so mobile phones on the same Wi-Fi can connect
+const HOST = '0.0.0.0'; // Binds to all network interfaces
 
 // Detect all non-internal IPv4 addresses
 function getNetworkIps() {
@@ -30,7 +31,72 @@ function getNetworkIps() {
 const networkIps = getNetworkIps();
 const primaryLanIp = networkIps[0]?.address || '127.0.0.1';
 
-// Basic MIME types dictionary for static file serving
+// Cloudflare Tunnel state
+let cloudflaredProcess = null;
+let activeTunnelUrl = null;
+
+// Find cloudflared binary
+function findCloudflaredBin() {
+  const candidates = [
+    path.join(os.homedir(), '.local/bin/cloudflared'),
+    '/usr/local/bin/cloudflared',
+    '/usr/bin/cloudflared',
+  ];
+  for (const binPath of candidates) {
+    if (fs.existsSync(binPath)) {
+      return binPath;
+    }
+  }
+  return 'cloudflared'; // fallback to PATH
+}
+
+function startCloudflareTunnel() {
+  const bin = findCloudflaredBin();
+  console.log(`[Cloudflare Tunnel] Spawning quick tunnel via: ${bin}`);
+
+  try {
+    cloudflaredProcess = spawn(bin, ['tunnel', '--url', `http://127.0.0.1:${PORT}`]);
+
+    const handleOutput = (data) => {
+      const text = data.toString();
+      // Match https://xxx.trycloudflare.com
+      const match = text.match(/https:\/\/[a-zA-Z0-9-]+\.trycloudflare\.com/);
+      if (match && !activeTunnelUrl) {
+        activeTunnelUrl = match[0];
+        console.log(`\n======================================================`);
+        console.log(`🌐 [Cloudflare Tunnel] Public Remote URL Ready:`);
+        console.log(`   ${activeTunnelUrl}`);
+        console.log(`   WebSocket: ${activeTunnelUrl.replace('https://', 'wss://')}/bash`);
+        console.log(`======================================================\n`);
+
+        try {
+          fs.writeFileSync(
+            TUNNEL_INFO_FILE,
+            JSON.stringify({
+              tunnelUrl: activeTunnelUrl,
+              wsUrl: `${activeTunnelUrl.replace('https://', 'wss://')}/bash`,
+              startedAt: new Date().toISOString(),
+            }, null, 2)
+          );
+        } catch {
+          // Ignore
+        }
+      }
+    };
+
+    cloudflaredProcess.stdout.on('data', handleOutput);
+    cloudflaredProcess.stderr.on('data', handleOutput);
+
+    cloudflaredProcess.on('exit', (code) => {
+      console.log(`[Cloudflare Tunnel] Process exited with code ${code}`);
+      activeTunnelUrl = null;
+    });
+  } catch (err) {
+    console.warn('[Cloudflare Tunnel] Failed to start cloudflared:', err.message);
+  }
+}
+
+// Basic MIME types dictionary
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
   '.js': 'application/javascript; charset=utf-8',
@@ -45,9 +111,8 @@ const MIME_TYPES = {
   '.txt': 'text/plain; charset=utf-8',
 };
 
-// 1. Create HTTP server for health-check, status info, and serving SPA for mobile
+// 1. Create HTTP server for health-check, status info, and serving SPA
 const server = http.createServer((req, res) => {
-  // Enable full CORS for cross-origin mobile clients and local dev
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
@@ -77,17 +142,19 @@ const server = http.createServer((req, res) => {
         port: PORT,
         mobileUrl: `http://${primaryLanIp}:${PORT}`,
         wsUrl: `ws://${primaryLanIp}:${PORT}/bash`,
+        tunnelUrl: activeTunnelUrl,
+        tunnelWsUrl: activeTunnelUrl ? `${activeTunnelUrl.replace('https://', 'wss://')}/bash` : null,
+        isTunnelActive: !!activeTunnelUrl,
         time: new Date().toISOString(),
       })
     );
     return;
   }
 
-  // Static file serving from dist folder (if built)
+  // Static file serving from dist folder
   if (fs.existsSync(DIST_DIR)) {
     let filePath = path.join(DIST_DIR, urlPath === '/' ? 'index.html' : urlPath);
 
-    // If file doesn't exist, fallback to index.html for SPA router
     if (!fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) {
       filePath = path.join(DIST_DIR, 'index.html');
     }
@@ -115,19 +182,22 @@ const server = http.createServer((req, res) => {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <style>
           body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace; background: #070b14; color: #f1f5f9; padding: 24px; text-align: center; }
-          .card { max-width: 500px; margin: 40px auto; background: #0e1424; border: 1px solid #1e293b; border-radius: 12px; padding: 24px; }
+          .card { max-width: 540px; margin: 40px auto; background: #0e1424; border: 1px solid #1e293b; border-radius: 12px; padding: 24px; }
           h2 { color: #10b981; margin-top: 0; }
-          code { background: #000; padding: 3px 8px; border-radius: 6px; color: #38bdf8; font-size: 14px; }
+          code { background: #000; padding: 3px 8px; border-radius: 6px; color: #38bdf8; font-size: 13px; }
           p { color: #94a3b8; font-size: 14px; line-height: 1.6; }
         </style>
       </head>
       <body>
         <div class="card">
-          <h2>✅ CyberSecYuta Bash Bridge Đang Hoạt Động</h2>
+          <h2>✅ CyberSecYuta Remote Bridge & Tunnel Đang Hoạt Động</h2>
           <p>Máy chủ: <strong>${os.hostname()}</strong> (${os.userInfo().username})</p>
-          <p>IP Mạng Cục Bộ (Wi-Fi): <code>${primaryLanIp}</code></p>
-          <p>Cổng (Port): <code>${PORT}</code></p>
-          <p>Để dùng bash qua điện thoại, hãy mở CyberSecYuta trên điện thoại và chọn kết nối tới <code>${primaryLanIp}:${PORT}</code></p>
+          <p>IP Wi-Fi LAN: <code>${primaryLanIp}:${PORT}</code></p>
+          ${
+            activeTunnelUrl
+              ? `<p>Cloudflare Tunnel 4G/5G: <br><a href="${activeTunnelUrl}" style="color: #06b6d4; font-weight: bold; text-decoration: underline;" target="_blank">${activeTunnelUrl}</a></p>`
+              : '<p>Đang kết nối Cloudflare Tunnel...</p>'
+          }
         </div>
       </body>
     </html>
@@ -155,6 +225,7 @@ wss.on('connection', (ws, req) => {
       user: os.userInfo().username,
       hostname: os.hostname(),
       lanIp: primaryLanIp,
+      tunnelUrl: activeTunnelUrl,
     })
   );
 
@@ -192,7 +263,6 @@ wss.on('connection', (ws, req) => {
     );
   });
 
-  // Handle incoming commands
   ws.on('message', (message) => {
     try {
       const payload = JSON.parse(message.toString());
@@ -227,10 +297,20 @@ server.listen(PORT, HOST, () => {
   console.log(`\n======================================================`);
   console.log(`✅ [CyberSecYuta] Real Local Bash Bridge is LIVE!`);
   console.log(`   - Máy tính cục bộ: http://127.0.0.1:${PORT}`);
-  console.log(`   - Điện thoại kết nối qua Wi-Fi LAN:`);
-  networkIps.forEach((ip) => {
-    console.log(`     * http://${ip.address}:${PORT} (${ip.name})`);
-  });
-  console.log(`   - WebSocket: ws://${primaryLanIp}:${PORT}/bash`);
+  console.log(`   - Điện thoại cùng Wi-Fi: http://${primaryLanIp}:${PORT}`);
   console.log(`======================================================\n`);
+
+  // Start Cloudflare Tunnel automatically
+  startCloudflareTunnel();
 });
+
+// Clean termination
+const cleanup = () => {
+  if (cloudflaredProcess) {
+    cloudflaredProcess.kill();
+  }
+  process.exit(0);
+};
+
+process.on('SIGINT', cleanup);
+process.on('SIGTERM', cleanup);

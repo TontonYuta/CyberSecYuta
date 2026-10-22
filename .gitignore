@@ -7,3 +7,4 @@ coverage/
 .env*
 !.env.example
 .vercel
+server/.tunnel-info.json
