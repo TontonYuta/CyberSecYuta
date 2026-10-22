@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { CURRICULUM_LESSONS, MODULES_INFO, CurriculumLesson } from '../data/curriculumData';
 import { sound } from '../utils/audio';
 import { HackerTerminalTab } from './HackerTerminalTab';
@@ -6,6 +7,7 @@ import { PacketInspectorTab } from './PacketInspectorTab';
 import { SandboxTab } from './SandboxTab';
 import { SocLogMatrixTab } from './SocLogMatrixTab';
 import { RoadmapTab } from './RoadmapTab';
+import { UxSecurityTab } from './UxSecurityTab';
 import {
   Lock,
   CheckCircle2,
@@ -23,6 +25,14 @@ import {
   AlertTriangle,
   Maximize2,
   Minimize2,
+  Zap,
+  Flag,
+  Code2,
+  Copy,
+  Lightbulb,
+  Check,
+  ShieldCheck,
+  Palette,
 } from 'lucide-react';
 
 interface LinearAcademyViewProps {
@@ -34,7 +44,7 @@ export const LinearAcademyView: React.FC<LinearAcademyViewProps> = ({
   onOpenGraduationModal,
   onUpdateCompletedCount,
 }) => {
-  // Unlocked & Completed lesson IDs stored in localStorage
+  // Curriculum state persisted in localStorage
   const [unlockedLessons, setUnlockedLessons] = useState<number[]>(() => {
     try {
       const saved = localStorage.getItem('cybersec_curriculum_unlocked');
@@ -60,12 +70,18 @@ export const LinearAcademyView: React.FC<LinearAcademyViewProps> = ({
   const [mobileTab, setMobileTab] = useState<'curriculum' | 'lesson'>('lesson');
   const [isFullscreenWorkbench, setIsFullscreenWorkbench] = useState<boolean>(false);
 
-  // Exit challenge selected option
+  // Exit challenge state
   const [selectedChallengeOption, setSelectedChallengeOption] = useState<string>('');
   const [challengeFeedback, setChallengeFeedback] = useState<{
     status: 'idle' | 'success' | 'error';
     message: string;
   }>({ status: 'idle', message: '' });
+
+  // CTF Challenge state
+  const [ctfInput, setCtfInput] = useState<string>('');
+  const [ctfStatus, setCtfStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [showCtfHint, setShowCtfHint] = useState<boolean>(false);
+  const [copiedCodeSnippet, setCopiedCodeSnippet] = useState<string | null>(null);
 
   const activeLesson =
     CURRICULUM_LESSONS.find((l) => l.id === activeLessonId) || CURRICULUM_LESSONS[0];
@@ -81,10 +97,13 @@ export const LinearAcademyView: React.FC<LinearAcademyViewProps> = ({
     onUpdateCompletedCount(completedLessons.length);
   }, [unlockedLessons, completedLessons, onUpdateCompletedCount]);
 
-  // Reset challenge option when active lesson changes
+  // Reset challenge & CTF when active lesson changes
   useEffect(() => {
     setSelectedChallengeOption('');
     setChallengeFeedback({ status: 'idle', message: '' });
+    setCtfInput('');
+    setCtfStatus('idle');
+    setShowCtfHint(false);
   }, [activeLessonId]);
 
   const handleSelectLesson = (lessonId: number) => {
@@ -95,7 +114,7 @@ export const LinearAcademyView: React.FC<LinearAcademyViewProps> = ({
     }
     sound.playClick();
     setActiveLessonId(lessonId);
-    setMobileTab('lesson'); // Auto-switch to lesson view on mobile
+    setMobileTab('lesson');
   };
 
   const handleToggleDemoMode = () => {
@@ -103,9 +122,29 @@ export const LinearAcademyView: React.FC<LinearAcademyViewProps> = ({
     const nextState = !demoMode;
     setDemoMode(nextState);
     if (nextState) {
-      // Unlock all 12 lessons
       const allIds = CURRICULUM_LESSONS.map((l) => l.id);
       setUnlockedLessons(allIds);
+    }
+  };
+
+  const handleCopyCode = (code: string, id: string) => {
+    navigator.clipboard.writeText(code);
+    sound.playClick();
+    setCopiedCodeSnippet(id);
+    setTimeout(() => setCopiedCodeSnippet(null), 2000);
+  };
+
+  const handleVerifyCtf = (e: React.FormEvent) => {
+    e.preventDefault();
+    const input = ctfInput.trim();
+    if (!input) return;
+
+    if (input.toLowerCase() === activeLesson.ctf.flag.toLowerCase()) {
+      sound.playSuccess();
+      setCtfStatus('success');
+    } else {
+      sound.playError();
+      setCtfStatus('error');
     }
   };
 
@@ -120,19 +159,16 @@ export const LinearAcademyView: React.FC<LinearAcademyViewProps> = ({
         message: `Chính xác! ${activeLesson.exitChallenge.explanation}`,
       });
 
-      // Mark current lesson as completed
       if (!completedLessons.includes(activeLessonId)) {
         setCompletedLessons((prev) => [...prev, activeLessonId]);
       }
 
-      // Unlock next lesson
       const nextId = activeLessonId + 1;
-      if (nextId <= 12 && !unlockedLessons.includes(nextId)) {
+      if (nextId <= CURRICULUM_LESSONS.length && !unlockedLessons.includes(nextId)) {
         setUnlockedLessons((prev) => [...prev, nextId]);
       }
 
-      // If finished lesson 12, celebrate graduation!
-      if (activeLessonId === 12) {
+      if (activeLessonId === CURRICULUM_LESSONS.length) {
         setTimeout(() => {
           onOpenGraduationModal();
         }, 1200);
@@ -145,7 +181,7 @@ export const LinearAcademyView: React.FC<LinearAcademyViewProps> = ({
       sound.playError();
       setChallengeFeedback({
         status: 'error',
-        message: 'Chưa chính xác! Hãy đọc lại tóm tắt lý thuyết hoặc kiểm tra công cụ thực hành và thử lại.',
+        message: 'Chưa chính xác! Hãy đọc lại tóm tắt lý thuyết hoặc ví dụ mẫu và thử lại nhé.',
       });
     }
   };
@@ -158,24 +194,44 @@ export const LinearAcademyView: React.FC<LinearAcademyViewProps> = ({
     setDemoMode(false);
   };
 
+  const getToolIcon = (toolType: string) => {
+    switch (toolType) {
+      case 'terminal':
+        return <Terminal className="w-3.5 h-3.5 text-emerald-400" />;
+      case 'wireshark':
+        return <Activity className="w-3.5 h-3.5 text-cyan-400" />;
+      case 'sandbox_sqli':
+      case 'sandbox_rce':
+      case 'sandbox_idor':
+      case 'sandbox_xss':
+        return <ShieldAlert className="w-3.5 h-3.5 text-rose-400" />;
+      case 'ux_security':
+        return <Palette className="w-3.5 h-3.5 text-purple-400" />;
+      case 'soc_log':
+        return <Activity className="w-3.5 h-3.5 text-amber-400" />;
+      default:
+        return <Award className="w-3.5 h-3.5 text-blue-400" />;
+    }
+  };
+
   return (
-    <div className="flex-1 w-full min-h-0 overflow-hidden flex flex-col bg-[#0b0f19]">
-      {/* Mobile Sub-Navigation Bar for Lesson List vs Active Lesson (Visible only on < lg) */}
-      <div className="lg:hidden px-3 py-2 bg-[#0e1424] border-b border-[#1e293b] flex items-center justify-between shrink-0 shadow-sm">
-        <div className="flex items-center p-1 bg-slate-950/80 border border-slate-800 rounded-xl w-full gap-1">
+    <div className="w-full h-full flex flex-col bg-[#070b14] overflow-hidden select-none">
+      {/* Mobile Top View Switcher */}
+      <div className="lg:hidden flex items-center justify-between p-2 bg-[#0c1220] border-b border-slate-800 shrink-0">
+        <div className="flex items-center gap-1.5 w-full">
           <button
             onClick={() => {
               sound.playClick();
               setMobileTab('curriculum');
             }}
-            className={`flex-1 py-2 px-2.5 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+            className={`flex-1 py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all min-h-[44px] ${
               mobileTab === 'curriculum'
-                ? 'bg-slate-800 text-white shadow-sm'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-slate-800 text-white border border-slate-700 shadow-sm'
+                : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            <BookOpen className="w-4 h-4 text-emerald-400 shrink-0" />
-            <span>12 Bài Học ({completedLessons.length}/12)</span>
+            <BookOpen className="w-3.5 h-3.5" />
+            <span>Mục Lục ({CURRICULUM_LESSONS.length} Bài)</span>
           </button>
 
           <button
@@ -183,118 +239,115 @@ export const LinearAcademyView: React.FC<LinearAcademyViewProps> = ({
               sound.playClick();
               setMobileTab('lesson');
             }}
-            className={`flex-1 py-2 px-2.5 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer min-w-0 ${
+            className={`flex-1 py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all min-h-[44px] ${
               mobileTab === 'lesson'
-                ? 'bg-emerald-950/80 text-emerald-300 border border-emerald-600/60 shadow-sm'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-emerald-600 text-white shadow-sm'
+                : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-            <span className="truncate">Bài {activeLesson.id}: {activeLesson.title}</span>
+            <Zap className="w-3.5 h-3.5" />
+            <span>Bài {activeLesson.id}: Chi Tiết</span>
           </button>
         </div>
       </div>
 
-      <div className="flex-1 w-full min-h-0 overflow-hidden flex flex-col lg:flex-row">
-        {/* SIDEBAR TRÁI: CÂY 12 BÀI HỌC TUYẾN TÍNH - 28% on desktop, full on mobile when active */}
+      <div className="flex-1 w-full h-full flex flex-col lg:flex-row overflow-hidden min-h-0">
+        {/* SIDEBAR: DANH SÁCH BÀI HỌC (28% desktop, full on mobile when active) */}
         <div
-          className={`w-full lg:w-[28%] h-full flex flex-col border-r border-[#1e293b] bg-[#0c1222] overflow-hidden ${
+          className={`w-full lg:w-[28%] h-full flex flex-col border-r border-slate-800 bg-[#090d16] shrink-0 min-h-0 ${
             mobileTab === 'curriculum' ? 'flex' : 'hidden lg:flex'
           }`}
         >
-          {/* Sidebar Header & Demo Mode Toggle */}
-          <div className="p-3.5 bg-[#0e1628] border-b border-[#1e293b] flex items-center justify-between shrink-0">
+          {/* Header Sidebar */}
+          <div className="p-3.5 border-b border-slate-800 bg-[#0c1220] flex items-center justify-between shrink-0">
             <div>
-              <div className="text-xs font-bold text-slate-100 uppercase tracking-wide flex items-center gap-1.5">
+              <h2 className="text-xs sm:text-sm font-bold text-white flex items-center gap-1.5">
                 <BookOpen className="w-4 h-4 text-emerald-400" />
-                <span>Cây Lộ Trình 12 Bài Học</span>
-              </div>
-              <div className="text-xs font-mono text-slate-400 mt-0.5">
-                Hoàn thành từng bài để mở khóa bài tiếp
+                <span>Lộ Trình Tuyến Tính</span>
+              </h2>
+              <div className="text-[11px] font-mono text-slate-400 mt-0.5">
+                Hoàn thành: {completedLessons.length}/{CURRICULUM_LESSONS.length} bài
               </div>
             </div>
 
             <div className="flex items-center gap-1.5">
               <button
                 onClick={handleToggleDemoMode}
-                className={`px-2.5 py-1 text-xs font-mono rounded-lg border transition-all cursor-pointer ${
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold border transition-all cursor-pointer ${
                   demoMode
-                    ? 'bg-amber-950/90 text-amber-300 border-amber-500/70 font-bold shadow-sm'
-                    : 'bg-slate-900 text-slate-400 border-slate-700 hover:text-slate-200'
+                    ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                    : 'bg-slate-800/80 text-slate-400 border-slate-700 hover:text-slate-200'
                 }`}
-                title="Bật chế độ mở khóa toàn bộ bài học để xem nhanh"
+                title="Mở khóa tất cả bài học để khám phá tự do"
               >
-                {demoMode ? 'Đã Mở Hết' : 'Mở Hết'}
+                <Unlock className="w-3 h-3" />
+                <span>{demoMode ? 'Đã Mở Hết' : 'Mở Hết'}</span>
               </button>
 
               <button
                 onClick={handleResetProgress}
-                className="p-1.5 text-slate-400 hover:text-slate-200 transition-colors cursor-pointer rounded-lg hover:bg-slate-800"
-                title="Đặt lại tiến độ bài học về Bài 1"
+                className="w-7 h-7 flex items-center justify-center rounded-md bg-slate-800/60 text-slate-400 hover:text-rose-400 border border-slate-700/60 transition-colors cursor-pointer"
+                title="Làm mới tiến độ học về Bài 1"
               >
-                <RotateCcw className="w-4 h-4" />
+                <RotateCcw className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
 
-          {/* 12 Lessons List Grouped by 4 Modules (Scrollable) */}
-          <div className="flex-1 overflow-y-auto p-3 sm:p-3.5 space-y-4">
+          {/* List of Lessons grouped by Module */}
+          <div className="flex-1 overflow-y-auto p-2 space-y-4">
             {MODULES_INFO.map((mod) => {
               const moduleLessons = CURRICULUM_LESSONS.filter((l) => l.moduleId === mod.id);
-
               return (
-                <div key={mod.id} className="space-y-2">
-                  <div className="px-2.5 py-1.5 text-xs font-bold text-slate-300 uppercase tracking-wider bg-slate-900/80 rounded-lg border border-slate-800/80 flex items-center justify-between">
-                    <span className="truncate">{mod.name}</span>
+                <div key={mod.id} className="space-y-1.5">
+                  <div className="px-2 pt-1 pb-1">
+                    <span className="text-[11px] font-mono font-bold text-slate-400 uppercase tracking-wider block">
+                      {mod.name}
+                    </span>
+                    <span className="text-[10px] text-slate-500 line-clamp-1">{mod.desc}</span>
                   </div>
 
-                  <div className="space-y-1.5">
+                  <div className="space-y-1">
                     {moduleLessons.map((lesson) => {
                       const isUnlocked = demoMode || unlockedLessons.includes(lesson.id);
                       const isCompleted = completedLessons.includes(lesson.id);
                       const isActive = activeLessonId === lesson.id;
 
                       return (
-                        <button
+                        <div
                           key={lesson.id}
                           onClick={() => handleSelectLesson(lesson.id)}
-                          disabled={!isUnlocked}
-                          className={`w-full text-left p-3 rounded-xl border text-xs sm:text-sm transition-all flex items-start justify-between gap-2.5 cursor-pointer min-h-[52px] ${
+                          className={`w-full text-left p-2.5 rounded-lg border transition-all flex items-center gap-2.5 min-h-[48px] ${
                             isActive
-                              ? 'bg-emerald-950/70 border-emerald-500 text-white shadow-md shadow-emerald-950/40 ring-1 ring-emerald-500/40'
-                              : isCompleted
-                              ? 'bg-slate-900/90 border-slate-800 text-slate-200 hover:border-slate-700 hover:bg-slate-850'
+                              ? 'bg-slate-800/90 border-emerald-500/60 text-white shadow-sm'
                               : isUnlocked
-                              ? 'bg-slate-950/60 border-slate-800/80 text-slate-300 hover:text-white hover:border-slate-700'
-                              : 'bg-black/20 border-slate-900/60 text-slate-600 cursor-not-allowed opacity-50'
+                              ? 'bg-slate-900/40 border-slate-800/80 text-slate-300 hover:bg-slate-800/50 hover:border-slate-700 cursor-pointer'
+                              : 'bg-slate-950/40 border-slate-900 text-slate-600 opacity-60 cursor-not-allowed'
                           }`}
                         >
-                          <div className="flex items-start gap-2.5 min-w-0">
-                            <div className="mt-0.5 shrink-0">
-                              {isCompleted ? (
-                                <CheckCircle2 className="w-4 h-4 text-emerald-400 fill-emerald-950" />
-                              ) : isUnlocked ? (
-                                <span className="w-4 h-4 rounded-full border border-slate-500 flex items-center justify-center text-[10px] font-mono font-bold text-slate-300">
-                                  {lesson.id}
-                                </span>
-                              ) : (
-                                <Lock className="w-4 h-4 text-slate-600" />
-                              )}
+                          <div className="w-6 h-6 rounded-md bg-slate-950 flex items-center justify-center shrink-0 border border-slate-800">
+                            {isCompleted ? (
+                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                            ) : isUnlocked ? (
+                              getToolIcon(lesson.toolType)
+                            ) : (
+                              <Lock className="w-3 h-3 text-slate-600" />
+                            )}
+                          </div>
+
+                          <div className="flex-1 min-w-0">
+                            <div className="text-xs font-semibold truncate leading-tight">
+                              {lesson.title}
                             </div>
-                            <div className="min-w-0">
-                              <div className="font-bold truncate leading-snug text-slate-100">
-                                {lesson.title}
-                              </div>
-                              <div className="text-xs text-slate-400 truncate mt-0.5">
-                                {lesson.subtitle}
-                              </div>
+                            <div className="text-[10px] text-slate-500 truncate mt-0.5">
+                              {lesson.subtitle}
                             </div>
                           </div>
 
                           {isActive && (
-                            <ChevronRight className="w-4 h-4 text-emerald-400 shrink-0 mt-1" />
+                            <ChevronRight className="w-4 h-4 text-emerald-400 shrink-0" />
                           )}
-                        </button>
+                        </div>
                       );
                     })}
                   </div>
@@ -304,22 +357,22 @@ export const LinearAcademyView: React.FC<LinearAcademyViewProps> = ({
           </div>
         </div>
 
-        {/* KHUNG HỌC TẬP CHÍNH (3 BƯỚC CHO MỖI BÀI HỌC) - 72% on desktop, full on mobile when active */}
+        {/* MAIN LESSON VIEW (72% desktop, full on mobile when active) */}
         <div
-          className={`w-full lg:w-[72%] h-full flex flex-col bg-[#0b0f19] overflow-hidden min-h-0 ${
+          className={`w-full lg:w-[72%] h-full flex flex-col bg-[#070b14] overflow-hidden min-h-0 ${
             mobileTab === 'lesson' ? 'flex' : 'hidden lg:flex'
           }`}
         >
-          {/* Lesson Breadcrumb & Headline Bar */}
-          <div className="px-3.5 py-3 bg-[#0e1628] border-b border-[#1e293b] flex flex-wrap items-center justify-between gap-3 shrink-0 shadow-sm">
+          {/* Top Headline Bar */}
+          <div className="px-4 py-3 bg-[#0c1220] border-b border-slate-800 flex flex-wrap items-center justify-between gap-3 shrink-0">
             <div>
-              <div className="text-xs font-mono text-emerald-400 font-bold uppercase tracking-wide">
+              <div className="text-xs font-mono text-emerald-400 font-bold uppercase tracking-wider">
                 {activeLesson.moduleName}
               </div>
-              <h2 className="text-sm sm:text-base font-extrabold text-white flex items-center gap-2 mt-0.5">
+              <h2 className="text-sm sm:text-base font-bold text-white flex items-center gap-2 mt-0.5">
                 <span>{activeLesson.title}</span>
                 {completedLessons.includes(activeLesson.id) && (
-                  <span className="text-xs font-mono bg-emerald-950/90 text-emerald-300 border border-emerald-500/80 px-2 py-0.5 rounded-md flex items-center gap-1 font-bold">
+                  <span className="text-[11px] font-mono bg-emerald-950/80 text-emerald-300 border border-emerald-500/60 px-2 py-0.5 rounded-md flex items-center gap-1 font-semibold">
                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
                     ĐÃ HOÀN THÀNH
                   </span>
@@ -327,90 +380,124 @@ export const LinearAcademyView: React.FC<LinearAcademyViewProps> = ({
               </h2>
             </div>
 
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-mono font-bold text-slate-400 bg-slate-900 border border-slate-800 px-2.5 py-1 rounded-lg">
-                Bài {activeLesson.id}/12
-              </span>
-            </div>
+            <span className="text-xs font-mono font-bold text-slate-400 bg-slate-900 border border-slate-800 px-2.5 py-1 rounded-md">
+              Bài {activeLesson.id}/{CURRICULUM_LESSONS.length}
+            </span>
           </div>
 
-          {/* Scrollable Main Area (Step 1 -> Step 2 -> Step 3) */}
-          <div className="flex-1 overflow-y-auto p-3.5 sm:p-5 space-y-5">
-            {/* BƯỚC 1: LÝ THUYẾT 3 PHÚT & CÂU HỎI PHỎNG VẤN TUYỂN DỤNG */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-2.5 text-xs sm:text-sm font-extrabold text-slate-200 uppercase tracking-wide">
-                <span className="w-6 h-6 rounded-full bg-blue-950 border border-blue-500/80 flex items-center justify-center text-blue-300 text-xs font-bold shadow-sm">
-                  1
-                </span>
-                <span>Bước 1: Lý Thuyết 3 Phút & Câu Hỏi Phỏng Vấn Tuyển Dụng</span>
+          {/* Scrollable Lesson Content */}
+          <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
+            {/* 1. LÝ THUYẾT NỀN TẢNG (THEORY & PLAIN EXPLANATION) */}
+            <div className="p-5 rounded-xl bg-slate-900/80 border border-slate-800 space-y-3.5">
+              <div className="flex items-center gap-2 text-xs sm:text-sm font-bold text-cyan-300 uppercase tracking-wide">
+                <BookOpen className="w-4 h-4 text-cyan-400" />
+                <span>1. Lý Thuyết Nền Tảng & Bản Chất Kỹ Thuật</span>
               </div>
 
-              {/* Quick 3-Minute Summary */}
-              <div className="p-3.5 sm:p-4 rounded-xl bg-[#0f172a] border border-[#1e293b] space-y-2 text-xs sm:text-sm shadow-sm">
-                <div className="font-bold text-slate-100 flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-blue-400" />
-                  <span>Tóm tắt bản chất kỹ thuật cốt lõi:</span>
+              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                {activeLesson.theory.plainExplanation}
+              </p>
+
+              <div className="p-3.5 rounded-lg bg-slate-950/80 border border-slate-800 space-y-1.5">
+                <div className="text-xs font-semibold text-slate-200 flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-cyan-400" /> Các điểm cốt lõi cần nhớ:
                 </div>
-                <ul className="space-y-2 text-slate-300 list-disc list-inside leading-relaxed text-xs sm:text-sm pl-1">
-                  {activeLesson.theorySummary.map((item, idx) => (
-                    <li key={idx} className="marker:text-blue-400">
-                      <span>{item}</span>
-                    </li>
+                <ul className="space-y-1 text-xs text-slate-400 list-disc list-inside leading-relaxed pl-1">
+                  {activeLesson.theory.summary.map((point, idx) => (
+                    <li key={idx} className="marker:text-cyan-400">{point}</li>
                   ))}
                 </ul>
               </div>
 
-              {/* Yellow/Amber Highlight Box: Interview Question */}
-              <div className="p-4 sm:p-5 rounded-xl bg-amber-950/20 border-2 border-amber-500/40 space-y-3 shadow-md">
-                <div className="flex items-center gap-2 font-bold text-amber-300 uppercase tracking-wide text-xs sm:text-sm">
-                  <Briefcase className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400 shrink-0" />
-                  <span>Câu Hỏi Phỏng Vấn Nhà Tuyển Dụng:</span>
-                </div>
-                <div className="font-bold text-white text-sm sm:text-base leading-snug">
-                  &quot;{activeLesson.interviewQuestion.question}&quot;
-                </div>
-
-                <div className="p-3.5 rounded-lg bg-black/60 border border-amber-800/40 space-y-1.5">
-                  <span className="text-xs font-mono text-amber-400 uppercase font-extrabold block">
-                    ★ Câu trả lời mẫu đạt chuẩn tuyển dụng:
-                  </span>
-                  <p className="text-xs sm:text-sm text-slate-200 leading-relaxed">
-                    {activeLesson.interviewQuestion.answer}
-                  </p>
-                </div>
-
-                <div className="text-xs sm:text-sm text-amber-300 font-medium italic flex items-start gap-1.5 pt-0.5">
-                  <Sparkles className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-                  <span>Mẹo ghi điểm phỏng vấn: {activeLesson.interviewQuestion.interviewerTip}</span>
-                </div>
+              <div className="text-xs text-emerald-400/90 font-medium flex items-center gap-1.5 pt-1">
+                <Lightbulb className="w-4 h-4 text-amber-400 shrink-0" />
+                <span>Điểm mấu chốt: {activeLesson.theory.keyTakeaway}</span>
               </div>
             </div>
 
-            {/* BƯỚC 2: BÀN THỰC HÀNH TƯƠNG TÁC TÍCH HỢP SẴN */}
-            <div className="space-y-2.5">
+            {/* 2. VÍ DỤ MẪU (ATTACK & DEFENSE CODE WALKTHROUGH) */}
+            <div className="p-5 rounded-xl bg-slate-900/80 border border-slate-800 space-y-4">
+              <div className="flex items-center gap-2 text-xs sm:text-sm font-bold text-amber-300 uppercase tracking-wide">
+                <Code2 className="w-4 h-4 text-amber-400" />
+                <span>2. Ví Dụ Mẫu: Đối Chiếu Code Có Lỗi vs Code Đã Vá</span>
+              </div>
+
+              <div className="text-xs font-semibold text-slate-200">
+                {activeLesson.example.title}
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {/* Vulnerable Code Box */}
+                {activeLesson.example.vulnerableCode && (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-[11px] font-mono text-rose-300">
+                      <span className="flex items-center gap-1">
+                        <ShieldAlert className="w-3.5 h-3.5 text-rose-400" /> Mã nguồn có lỗ hổng:
+                      </span>
+                      <button
+                        onClick={() => handleCopyCode(activeLesson.example.vulnerableCode || '', 'vuln')}
+                        className="flex items-center gap-1 text-slate-400 hover:text-white"
+                      >
+                        {copiedCodeSnippet === 'vuln' ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                        <span>{copiedCodeSnippet === 'vuln' ? 'Đã chép' : 'Sao chép'}</span>
+                      </button>
+                    </div>
+                    <pre className="p-3 rounded-lg bg-black/80 font-mono text-[11px] text-rose-200/90 overflow-x-auto border border-rose-900/40 leading-relaxed">
+                      {activeLesson.example.vulnerableCode}
+                    </pre>
+                    <p className="text-[11px] text-slate-400 leading-relaxed italic">
+                      {activeLesson.example.vulnerableExplanation}
+                    </p>
+                  </div>
+                )}
+
+                {/* Secure Code Box */}
+                {activeLesson.example.secureCode && (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-[11px] font-mono text-emerald-300">
+                      <span className="flex items-center gap-1">
+                        <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" /> Mã nguồn đã vá an toàn:
+                      </span>
+                      <button
+                        onClick={() => handleCopyCode(activeLesson.example.secureCode || '', 'sec')}
+                        className="flex items-center gap-1 text-slate-400 hover:text-white"
+                      >
+                        {copiedCodeSnippet === 'sec' ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                        <span>{copiedCodeSnippet === 'sec' ? 'Đã chép' : 'Sao chép'}</span>
+                      </button>
+                    </div>
+                    <pre className="p-3 rounded-lg bg-black/80 font-mono text-[11px] text-emerald-200/90 overflow-x-auto border border-emerald-900/40 leading-relaxed">
+                      {activeLesson.example.secureCode}
+                    </pre>
+                    <p className="text-[11px] text-slate-400 leading-relaxed italic">
+                      {activeLesson.example.secureExplanation}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* 3. BÀN THỰC HÀNH TƯƠNG TÁC (WORKBENCH) */}
+            <div className="space-y-3">
               <div className="flex items-center justify-between flex-wrap gap-2">
-                <div className="flex items-center gap-2.5 text-xs sm:text-sm font-extrabold text-slate-200 uppercase tracking-wide">
-                  <span className="w-6 h-6 rounded-full bg-emerald-950 border border-emerald-500/80 flex items-center justify-center text-emerald-300 text-xs font-bold shadow-sm">
-                    2
-                  </span>
-                  <span>Bước 2: Bàn Thực Hành Tương Tác Trực Tiếp</span>
+                <div className="flex items-center gap-2 text-xs sm:text-sm font-bold text-emerald-300 uppercase tracking-wide">
+                  <Zap className="w-4 h-4 text-emerald-400" />
+                  <span>3. Bàn Thực Hành Tương Tác Trực Tiếp</span>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-mono text-slate-400 bg-slate-900 border border-slate-800 px-2 py-0.5 rounded">
-                    Mục tiêu: {activeLesson.taskObjective}
+                  <span className="text-[11px] font-mono text-slate-400 bg-slate-900 border border-slate-800 px-2 py-0.5 rounded">
+                    Mục tiêu: {activeLesson.practice.objective}
                   </span>
 
-                  {/* Focus / Fullscreen Mode Toggle for Workbench */}
                   <button
                     onClick={() => setIsFullscreenWorkbench(!isFullscreenWorkbench)}
-                    className="flex items-center gap-1 px-2.5 py-1 text-xs font-bold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 transition-colors cursor-pointer shadow-sm"
-                    title={isFullscreenWorkbench ? "Thu nhỏ bàn thực hành" : "Phóng to toàn màn hình bàn thực hành"}
+                    className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-md bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-colors"
                   >
                     {isFullscreenWorkbench ? (
                       <>
                         <Minimize2 className="w-3.5 h-3.5 text-emerald-400" />
-                        <span className="hidden sm:inline">Thu nhỏ</span>
+                        <span>Thu nhỏ</span>
                       </>
                     ) : (
                       <>
@@ -422,23 +509,23 @@ export const LinearAcademyView: React.FC<LinearAcademyViewProps> = ({
                 </div>
               </div>
 
-              {/* Embedded Workbenches Container */}
+              {/* Embedded Workbench Frame */}
               <div
-                className={`rounded-xl border border-[#1e293b] bg-black overflow-hidden shadow-2xl flex flex-col ${
+                className={`rounded-xl border border-slate-800 bg-black overflow-hidden flex flex-col ${
                   isFullscreenWorkbench
-                    ? 'fixed inset-0 z-50 p-2 sm:p-4 bg-[#0b0f19]/95 backdrop-blur-md'
+                    ? 'fixed inset-0 z-50 p-2 sm:p-4 bg-[#070b14]/95 backdrop-blur-md'
                     : 'h-[500px] sm:h-[540px]'
                 }`}
               >
                 {isFullscreenWorkbench && (
-                  <div className="h-10 px-3 bg-[#0e1628] border-b border-[#1e293b] flex items-center justify-between shrink-0 mb-1 rounded-t-lg">
+                  <div className="h-10 px-3 bg-[#0c1220] border-b border-slate-800 flex items-center justify-between shrink-0 mb-1 rounded-t-lg">
                     <span className="text-xs font-bold text-white flex items-center gap-2">
                       <Zap className="w-4 h-4 text-amber-400" />
-                      Chế Độ Toàn Màn Hình - Bàn Thực Hành Bài {activeLesson.id}: {activeLesson.title}
+                      Toàn Màn Hình: Bài {activeLesson.id} - {activeLesson.title}
                     </span>
                     <button
                       onClick={() => setIsFullscreenWorkbench(false)}
-                      className="flex items-center gap-1.5 px-3 py-1 bg-red-600 hover:bg-red-500 text-white rounded-lg text-xs font-bold cursor-pointer transition-colors"
+                      className="flex items-center gap-1 px-3 py-1 bg-rose-600 hover:bg-rose-500 text-white rounded-md text-xs font-semibold"
                     >
                       <Minimize2 className="w-3.5 h-3.5" />
                       <span>Đóng Toàn Màn Hình</span>
@@ -446,15 +533,15 @@ export const LinearAcademyView: React.FC<LinearAcademyViewProps> = ({
                   </div>
                 )}
 
-                <div className="flex-1 w-full h-full min-h-0 overflow-hidden flex flex-col rounded-b-lg">
-                  {/* Tool router based on active lesson */}
-                  {(activeLesson.toolType === 'terminal') && <HackerTerminalTab />}
-                  {(activeLesson.toolType === 'wireshark') && <PacketInspectorTab />}
+                <div className="flex-1 w-full h-full min-h-0 overflow-hidden flex flex-col">
+                  {activeLesson.toolType === 'terminal' && <HackerTerminalTab />}
+                  {activeLesson.toolType === 'wireshark' && <PacketInspectorTab />}
                   {(activeLesson.toolType === 'sandbox_sqli' ||
                     activeLesson.toolType === 'sandbox_rce' ||
                     activeLesson.toolType === 'sandbox_idor' ||
                     activeLesson.toolType === 'sandbox_xss') && <SandboxTab />}
-                  {(activeLesson.toolType === 'soc_log') && <SocLogMatrixTab />}
+                  {activeLesson.toolType === 'ux_security' && <UxSecurityTab />}
+                  {activeLesson.toolType === 'soc_log' && <SocLogMatrixTab />}
                   {(activeLesson.toolType === 'writeup' || activeLesson.toolType === 'capstone') && (
                     <RoadmapTab />
                   )}
@@ -462,24 +549,93 @@ export const LinearAcademyView: React.FC<LinearAcademyViewProps> = ({
               </div>
             </div>
 
-            {/* BƯỚC 3: EXIT CHALLENGE / CỔNG MỞ KHÓA BÀI KẾ TIẾP */}
-            <div className="space-y-3 pt-3 border-t border-[#1e293b]">
-              <div className="flex items-center gap-2.5 text-xs sm:text-sm font-extrabold text-slate-200 uppercase tracking-wide">
-                <span className="w-6 h-6 rounded-full bg-purple-950 border border-purple-500/80 flex items-center justify-center text-purple-300 text-xs font-bold shadow-sm">
-                  3
-                </span>
-                <span>Bước 3: Exit Challenge (Cổng Đánh Giá & Mở Khóa Bài)</span>
+            {/* 4. CƯỚP CỜ (CTF CHALLENGE) */}
+            <div className="p-5 rounded-xl bg-slate-900/80 border border-slate-800 space-y-3.5">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div className="flex items-center gap-2 text-xs sm:text-sm font-bold text-rose-300 uppercase tracking-wide">
+                  <Flag className="w-4 h-4 text-rose-400" />
+                  <span>4. Thử Thách Cướp Cờ (CTF Challenge)</span>
+                </div>
+
+                <button
+                  onClick={() => setShowCtfHint(!showCtfHint)}
+                  className="text-xs text-amber-400 hover:text-amber-300 underline"
+                >
+                  {showCtfHint ? 'Ẩn gợi ý' : 'Xem gợi ý giải cờ'}
+                </button>
               </div>
 
-              <form
-                onSubmit={handleSubmitExitChallenge}
-                className="p-4 sm:p-5 rounded-xl bg-[#0f172a] border border-[#1e293b] space-y-4 shadow-sm"
-              >
-                <div className="font-bold text-white text-xs sm:text-sm leading-snug">
+              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                {activeLesson.ctf.scenario}
+              </p>
+
+              {showCtfHint && (
+                <div className="p-3 rounded-lg bg-amber-950/30 border border-amber-800/40 text-xs text-amber-200">
+                  💡 Gợi ý: {activeLesson.ctf.hint}
+                </div>
+              )}
+
+              {/* CTF Submission Form */}
+              <form onSubmit={handleVerifyCtf} className="flex flex-col sm:flex-row gap-2 pt-1">
+                <input
+                  type="text"
+                  value={ctfInput}
+                  onChange={(e) => setCtfInput(e.target.value)}
+                  placeholder="Nhập cờ chiến thắng dạng FLAG{...}"
+                  className="flex-1 px-3.5 py-2 rounded-lg bg-black/60 border border-slate-700 font-mono text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-rose-500"
+                />
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-mono text-xs font-semibold transition-colors shrink-0"
+                >
+                  Kiểm Tra Cờ
+                </button>
+              </form>
+
+              {ctfStatus === 'success' && (
+                <div className="p-3 rounded-lg bg-emerald-950/40 border border-emerald-500/50 text-xs text-emerald-300 flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <span>{activeLesson.ctf.secretReward}</span>
+                </div>
+              )}
+
+              {ctfStatus === 'error' && (
+                <div className="p-3 rounded-lg bg-rose-950/40 border border-rose-500/50 text-xs text-rose-300 flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
+                  <span>Cờ chưa chính xác! Hãy kiểm tra lại kết quả trong Bàn thực hành bên trên.</span>
+                </div>
+              )}
+            </div>
+
+            {/* 5. PHỎNG VẤN TUYỂN DỤNG & EXIT CHALLENGE */}
+            <div className="p-5 rounded-xl bg-slate-900/80 border border-slate-800 space-y-4">
+              <div className="flex items-center gap-2 text-xs sm:text-sm font-bold text-purple-300 uppercase tracking-wide">
+                <Briefcase className="w-4 h-4 text-purple-400" />
+                <span>5. Phỏng Vấn Tuyển Dụng & Trắc Nghiệm Mở Khóa Bài</span>
+              </div>
+
+              {/* Interview Question Box */}
+              <div className="p-4 rounded-lg bg-amber-950/20 border border-amber-800/40 space-y-2">
+                <div className="text-xs font-bold text-amber-300 uppercase">
+                  Câu hỏi phỏng vấn thực tế:
+                </div>
+                <div className="text-xs sm:text-sm font-semibold text-white">
+                  &quot;{activeLesson.interview.question}&quot;
+                </div>
+                <div className="p-2.5 rounded bg-black/60 text-xs text-slate-300 leading-relaxed">
+                  <strong className="text-amber-400">Câu trả lời mẫu:</strong> {activeLesson.interview.answer}
+                </div>
+                <div className="text-[11px] text-amber-300/90 italic">
+                  💡 Mẹo ghi điểm: {activeLesson.interview.interviewerTip}
+                </div>
+              </div>
+
+              {/* Exit Challenge Quiz */}
+              <form onSubmit={handleSubmitExitChallenge} className="space-y-3 pt-2">
+                <div className="text-xs sm:text-sm font-bold text-white">
                   {activeLesson.exitChallenge.question}
                 </div>
 
-                {/* Options Cards */}
                 <div className="space-y-2 font-mono">
                   {activeLesson.exitChallenge.options.map((opt) => {
                     const isSelected = selectedChallengeOption === opt.id;
@@ -487,10 +643,10 @@ export const LinearAcademyView: React.FC<LinearAcademyViewProps> = ({
                       <label
                         key={opt.id}
                         onClick={() => sound.playClick()}
-                        className={`flex items-start gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition-all min-h-[50px] ${
+                        className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
                           isSelected
-                            ? 'bg-emerald-950/40 border-emerald-500 text-white shadow-md shadow-emerald-950/50'
-                            : 'bg-slate-900/70 border-slate-800 text-slate-200 hover:border-slate-700 hover:bg-slate-850'
+                            ? 'bg-emerald-950/40 border-emerald-500 text-white'
+                            : 'bg-slate-950/60 border-slate-800 text-slate-300 hover:border-slate-700'
                         }`}
                       >
                         <input
@@ -498,47 +654,37 @@ export const LinearAcademyView: React.FC<LinearAcademyViewProps> = ({
                           name={`challenge-${activeLesson.id}`}
                           value={opt.id}
                           checked={isSelected}
-                          onChange={(e) => setSelectedChallengeOption(e.target.value)}
-                          className="mt-1 w-4 h-4 accent-emerald-500 cursor-pointer"
+                          onChange={() => setSelectedChallengeOption(opt.id)}
+                          className="mt-1 accent-emerald-500"
                         />
-                        <span className="text-xs sm:text-sm font-medium leading-relaxed flex-1">
-                          {opt.text}
-                        </span>
+                        <span className="text-xs sm:text-sm leading-snug">{opt.text}</span>
                       </label>
                     );
                   })}
                 </div>
 
-                {/* Challenge feedback message */}
                 {challengeFeedback.status !== 'idle' && (
                   <div
-                    className={`p-3.5 rounded-xl border text-xs sm:text-sm font-mono flex items-start gap-2.5 ${
+                    className={`p-3 rounded-lg text-xs leading-relaxed ${
                       challengeFeedback.status === 'success'
-                        ? 'bg-emerald-950/80 border-emerald-500 text-emerald-200'
-                        : 'bg-red-950/80 border-red-500 text-red-200'
+                        ? 'bg-emerald-950/60 text-emerald-200 border border-emerald-500/60'
+                        : 'bg-rose-950/60 text-rose-200 border border-rose-500/60'
                     }`}
                   >
-                    {challengeFeedback.status === 'success' ? (
-                      <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
-                    ) : (
-                      <AlertTriangle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
-                    )}
-                    <span className="leading-relaxed">{challengeFeedback.message}</span>
+                    {challengeFeedback.message}
                   </div>
                 )}
 
-                {/* Action Button */}
                 <button
                   type="submit"
                   disabled={!selectedChallengeOption}
-                  className="w-full h-12 px-5 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 disabled:opacity-40 text-white font-extrabold rounded-xl text-xs sm:text-sm transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-emerald-950/80 border border-emerald-400/40 active:scale-[0.99]"
+                  className={`w-full py-3 rounded-lg font-bold text-xs sm:text-sm transition-all cursor-pointer ${
+                    selectedChallengeOption
+                      ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-md'
+                      : 'bg-slate-800 text-slate-500 cursor-not-allowed'
+                  }`}
                 >
-                  <Unlock className="w-4 h-4" />
-                  <span>
-                    {activeLesson.id === 12
-                      ? 'Nộp Bài & Hoàn Thành Khóa Học (Mở Chứng Chỉ Tốt Nghiệp) 🎓'
-                      : 'Nộp Bài & Mở Khóa Bài Tiếp Theo 🔓'}
-                  </span>
+                  Xác Nhận Đáp Án & Mở Khóa Bài Kế Tiếp ➔
                 </button>
               </form>
             </div>

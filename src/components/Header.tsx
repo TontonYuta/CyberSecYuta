@@ -47,13 +47,13 @@ export const Header: React.FC<HeaderProps> = ({
 
   // Rank label logic
   const getRankBadge = (count: number) => {
-    if (count >= 12) return { text: '🏆 SẴN SÀNG ĐI LÀM (JOB-READY)', short: '🏆 Job-Ready', color: 'text-emerald-300 bg-emerald-950/80 border-emerald-500' };
-    if (count >= 8) return { text: '🛡️ SOC Analyst', short: '🛡️ SOC L1', color: 'text-purple-300 bg-purple-950/80 border-purple-600/60' };
-    if (count >= 4) return { text: '⚡ Junior Pentester', short: '⚡ Pentester', color: 'text-blue-300 bg-blue-950/80 border-blue-600/60' };
+    if (count >= 13) return { text: '🏆 SẴN SÀNG ĐI LÀM (JOB-READY)', short: '🏆 Job-Ready', color: 'text-emerald-300 bg-emerald-950/80 border-emerald-500' };
+    if (count >= 9) return { text: '🛡️ SOC Analyst', short: '🛡️ SOC L1', color: 'text-purple-300 bg-purple-950/80 border-purple-600/60' };
+    if (count >= 5) return { text: '⚡ Junior Pentester', short: '⚡ Pentester', color: 'text-blue-300 bg-blue-950/80 border-blue-600/60' };
     return { text: '🌱 Khởi động', short: '🌱 Mới học', color: 'text-amber-300 bg-amber-950/80 border-amber-600/60' };
   };
 
-  const progressPct = Math.round((completedLessonsCount / 12) * 100);
+  const progressPct = Math.round((completedLessonsCount / 13) * 100);
   const rank = getRankBadge(completedLessonsCount);
 
   return (
@@ -68,7 +68,7 @@ export const Header: React.FC<HeaderProps> = ({
             <span className="font-extrabold text-sm sm:text-base tracking-tight text-white flex items-center gap-1.5 whitespace-nowrap">
               CyberSec<span className="text-emerald-400 font-black">Yuta</span>
               <span className="hidden xl:inline text-slate-400 font-normal text-xs ml-1">
-                — Lộ Trình 12 Bài Thực Chiến Chuẩn Nghề
+                — Lộ Trình Thực Chiến Chuẩn Nghề & Real Bash
               </span>
             </span>
           </div>
@@ -90,7 +90,7 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="flex items-center justify-between text-xs font-mono">
             <span className="text-slate-400 font-medium">Tiến độ tốt nghiệp:</span>
             <span className="text-emerald-400 font-bold tabular-nums">
-              {completedLessonsCount}/12 ({progressPct}%)
+              {completedLessonsCount}/13 ({progressPct}%)
             </span>
           </div>
           <div className="w-full h-2 bg-slate-950 border border-slate-800 rounded-full overflow-hidden">
@@ -115,7 +115,7 @@ export const Header: React.FC<HeaderProps> = ({
             }`}
           >
             <GraduationCap className="w-4 h-4 text-emerald-300" />
-            <span className="hidden sm:inline">Học Viện (12 Bài)</span>
+            <span className="hidden sm:inline">Học Viện (13 Bài)</span>
             <span className="sm:hidden">Học Viện</span>
           </button>
 

@@ -7,10 +7,11 @@ import { PacketInspectorTab } from './components/PacketInspectorTab';
 import { HackerTerminalTab } from './components/HackerTerminalTab';
 import { SocLogMatrixTab } from './components/SocLogMatrixTab';
 import { RoadmapTab } from './components/RoadmapTab';
+import { UxSecurityTab } from './components/UxSecurityTab';
 import { QuickCheatSheetModal } from './components/QuickCheatSheetModal';
 import { GraduationModal } from './components/GraduationModal';
 import { sound } from './utils/audio';
-import { Zap, Activity, Terminal, Shield, Compass, BookOpen } from 'lucide-react';
+import { Zap, Activity, Terminal, Shield, Compass, BookOpen, Palette } from 'lucide-react';
 
 export default function App() {
   const [appMode, setAppMode] = useState<AppMode>('academy');
@@ -121,6 +122,18 @@ export default function App() {
                 </button>
 
                 <button
+                  onClick={() => handleSandboxTabClick('ux_security')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+                    activeSandboxTab === 'ux_security'
+                      ? 'bg-purple-500/20 text-purple-300 border border-purple-500/50 shadow-sm shadow-purple-950/40'
+                      : 'text-slate-400 hover:text-white hover:bg-slate-900/60'
+                  }`}
+                >
+                  <Palette className="w-3.5 h-3.5 text-purple-400 shrink-0" />
+                  <span>UX/UI & Clickjacking</span>
+                </button>
+
+                <button
                   onClick={() => handleSandboxTabClick('roadmap')}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                     activeSandboxTab === 'roadmap'
@@ -153,6 +166,7 @@ export default function App() {
               {activeSandboxTab === 'packets' && <PacketInspectorTab />}
               {activeSandboxTab === 'terminal' && <HackerTerminalTab />}
               {activeSandboxTab === 'soc' && <SocLogMatrixTab />}
+              {activeSandboxTab === 'ux_security' && <UxSecurityTab />}
               {activeSandboxTab === 'roadmap' && <RoadmapTab />}
             </div>
           </div>

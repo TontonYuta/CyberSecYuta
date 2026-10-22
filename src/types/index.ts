@@ -1,4 +1,4 @@
-export type ActiveTab = 'sandbox' | 'packets' | 'terminal' | 'soc' | 'roadmap';
+export type ActiveTab = 'sandbox' | 'packets' | 'terminal' | 'soc' | 'roadmap' | 'ux_security';
 
 export type ScenarioId = 'sqli' | 'cmd_injection' | 'idor' | 'xss';
 

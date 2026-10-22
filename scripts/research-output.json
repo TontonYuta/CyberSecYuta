@@ -1,0 +1,56 @@
+{
+  "timestamp": "2026-10-22T03:39:50.505Z",
+  "roadmapCheck": {
+    "title": "Cyber Security Roadmap: Learn to become a Cyber Security Expert",
+    "heading": "Cyber Security Expert",
+    "metaDesc": "Step by step guide to becoming a Cyber Security Expert in 2026",
+    "sampleTopics": [
+      "All Roadmaps",
+      "Prefer us on Google",
+      "Prefer us on Google",
+      "Weekly Newsletter",
+      "Weekly Newsletter",
+      "Download",
+      "Step by step guide to becoming a Cyber Security Expert in 2026",
+      "Roadmap",
+      "Roadmap",
+      "Projects",
+      "Projects",
+      "AI Tutor",
+      "Personalize",
+      "Join the Community",
+      "roadmap.sh is the 6th most starred project on GitHub and is visited by hundreds of thousands of developers every month.",
+      "Rank  out of 28M!",
+      "GitHub Stars",
+      "Star us on GitHub",
+      "Help us reach #1",
+      "+90kevery month",
+      "Registered Users",
+      "Register yourself",
+      "Commit to your growth",
+      "+2kevery month",
+      "Discord Members",
+      "Join on Discord",
+      "Join the community",
+      "RoadmapsGuidesFAQsYouTube",
+      "roadmap.shby@nilbuild@nilbuild",
+      "roadmap.sh"
+    ]
+  },
+  "aiSlopCheck": {
+    "coreFlawsIdentified": [
+      "Excessive purple/neon gradients and random glow blurs",
+      "Cramped card grids with identical 3-column layouts and zero hierarchy",
+      "Vague, robotic placeholder text without practical substance",
+      "Micro-border clutter and fake glassmorphism everywhere",
+      "Lack of real human tactile feedback and authentic user workflows"
+    ],
+    "solutions": [
+      "Editorial, high-contrast typography with clear semantic hierarchy",
+      "Matte slate/charcoal foundations with purposeful accenting (Emerald, Amber, Rose, Cyan)",
+      "Real-world utility: connection to actual local bash shell, not just toy simulation",
+      "Tactile micro-animations using Motion (subtle scale, tab transitions, step progress)",
+      "Modular, clean lesson files with real code examples, step-by-step labs, and CTF flags"
+    ]
+  }
+}

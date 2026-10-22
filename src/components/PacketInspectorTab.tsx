@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { CAPTURED_PACKETS } from '../data/packetData';
 import { NetworkPacket } from '../types';
+import { sound } from '../utils/audio';
 import {
   Activity,
   Layers,
@@ -19,6 +20,7 @@ import {
   ExternalLink,
   Search,
   Copy,
+  FileText,
 } from 'lucide-react';
 
 export const PacketInspectorTab: React.FC = () => {
