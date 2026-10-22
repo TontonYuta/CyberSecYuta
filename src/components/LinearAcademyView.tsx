@@ -91,7 +91,6 @@ export const LinearAcademyView: React.FC<LinearAcademyViewProps> = ({
   });
 
   const [activeLessonId, setActiveLessonId] = useState<number>(1);
-  const [demoMode, setDemoMode] = useState<boolean>(false);
   const [mobileTab, setMobileTab] = useState<'curriculum' | 'lesson'>('lesson');
   const [lessonStep, setLessonStep] = useState<LessonStep>('theory');
   const [viewMode, setViewMode] = useState<'step' | 'all'>('step');
@@ -135,7 +134,7 @@ export const LinearAcademyView: React.FC<LinearAcademyViewProps> = ({
   }, [activeLessonId]);
 
   const handleSelectLesson = (lessonId: number) => {
-    const isUnlocked = demoMode || unlockedLessons.includes(lessonId);
+    const isUnlocked = unlockedLessons.includes(lessonId);
     if (!isUnlocked) {
       sound.playError();
       return;
@@ -144,16 +143,6 @@ export const LinearAcademyView: React.FC<LinearAcademyViewProps> = ({
     setActiveLessonId(lessonId);
     setMobileTab('lesson');
     setLessonStep('theory');
-  };
-
-  const handleToggleDemoMode = () => {
-    sound.playClick();
-    const nextState = !demoMode;
-    setDemoMode(nextState);
-    if (nextState) {
-      const allIds = CURRICULUM_LESSONS.map((l) => l.id);
-      setUnlockedLessons(allIds);
-    }
   };
 
   const handleCopyCode = (code: string, id: string) => {
@@ -175,12 +164,6 @@ export const LinearAcademyView: React.FC<LinearAcademyViewProps> = ({
       sound.playError();
       setCtfStatus('error');
     }
-  };
-
-  const handleAutoFillFlag = () => {
-    sound.playClick();
-    setCtfInput(activeLesson.ctf.flag);
-    setCtfStatus('idle');
   };
 
   const handleSubmitExitChallenge = (e: React.FormEvent) => {
@@ -226,7 +209,6 @@ export const LinearAcademyView: React.FC<LinearAcademyViewProps> = ({
     setUnlockedLessons([1]);
     setCompletedLessons([]);
     setActiveLessonId(1);
-    setDemoMode(false);
     setLessonStep('theory');
   };
 
@@ -359,24 +341,12 @@ export const LinearAcademyView: React.FC<LinearAcademyViewProps> = ({
 
             <div className="flex items-center gap-1.5">
               <button
-                onClick={handleToggleDemoMode}
-                className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold border transition-all cursor-pointer ${
-                  demoMode
-                    ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
-                    : 'bg-slate-800/80 text-slate-400 border-slate-700 hover:text-slate-200'
-                }`}
-                title="Mở khóa tất cả bài học để khám phá tự do"
-              >
-                <Unlock className="w-3 h-3" />
-                <span>{demoMode ? 'Đã Mở Hết' : 'Mở Hết'}</span>
-              </button>
-
-              <button
                 onClick={handleResetProgress}
-                className="w-7 h-7 flex items-center justify-center rounded-md bg-slate-800/60 text-slate-400 hover:text-rose-400 border border-slate-700/60 transition-colors cursor-pointer"
+                className="flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-slate-800/80 text-slate-400 hover:text-rose-400 border border-slate-700/60 transition-colors cursor-pointer"
                 title="Làm mới tiến độ học về Bài 1"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
+                <span>Làm Mới</span>
               </button>
             </div>
           </div>
@@ -396,7 +366,7 @@ export const LinearAcademyView: React.FC<LinearAcademyViewProps> = ({
 
                   <div className="space-y-1">
                     {moduleLessons.map((lesson) => {
-                      const isUnlocked = demoMode || unlockedLessons.includes(lesson.id);
+                      const isUnlocked = unlockedLessons.includes(lesson.id);
                       const isCompleted = completedLessons.includes(lesson.id);
                       const isActive = activeLessonId === lesson.id;
 
@@ -776,16 +746,6 @@ export const LinearAcademyView: React.FC<LinearAcademyViewProps> = ({
 
                   <div className="flex items-center gap-2">
                     <button
-                      type="button"
-                      onClick={handleAutoFillFlag}
-                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-mono font-medium transition-colors cursor-pointer"
-                      title="Tự động điền cờ mẫu để kiểm tra nhanh trên điện thoại"
-                    >
-                      <Zap className="w-3.5 h-3.5 text-amber-400" />
-                      <span>⚡ Điền Thử Cờ Mẫu</span>
-                    </button>
-
-                    <button
                       onClick={() => setShowCtfHint(!showCtfHint)}
                       className="text-xs text-amber-400 hover:text-amber-300 underline cursor-pointer"
                     >
@@ -810,7 +770,7 @@ export const LinearAcademyView: React.FC<LinearAcademyViewProps> = ({
                     type="text"
                     value={ctfInput}
                     onChange={(e) => setCtfInput(e.target.value)}
-                    placeholder="Nhập cờ dạng FLAG{...} hoặc bấm [⚡ Điền Thử Cờ Mẫu]"
+                    placeholder="Dán hoặc nhập cờ tìm được trong Bàn Thực Hành dạng FLAG{...}"
                     className="flex-1 px-3.5 py-2.5 rounded-lg bg-black/60 border border-slate-700 font-mono text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-rose-500 min-h-[44px]"
                   />
                   <button

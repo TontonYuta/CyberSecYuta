@@ -18,6 +18,8 @@ import {
   MousePointer2,
   RefreshCw,
   Zap,
+  Copy,
+  Check,
 } from 'lucide-react';
 
 export const UxSecurityTab: React.FC = () => {
@@ -26,6 +28,7 @@ export const UxSecurityTab: React.FC = () => {
   const [defenseEnabled, setDefenseEnabled] = useState<boolean>(false);
   const [attackTriggered, setAttackTriggered] = useState<boolean>(false);
   const [activeSubTab, setActiveSubTab] = useState<'clickjacking' | 'anti_slop' | 'dark_patterns'>('clickjacking');
+  const [copiedFlag, setCopiedFlag] = useState<string | null>(null);
 
   // Handle lure button click
   const handleLureClick = () => {
@@ -141,6 +144,41 @@ export const UxSecurityTab: React.FC = () => {
                     </button>
                   </div>
                 </div>
+
+                {defenseEnabled && (
+                  <div className="p-3.5 rounded-xl bg-amber-950/50 border border-amber-500/60 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs sm:text-sm shadow-md animate-fadeIn">
+                    <div className="flex items-center gap-2 text-amber-200 flex-wrap">
+                      <CheckCircle2 className="w-4 h-4 text-amber-400 shrink-0" />
+                      <span className="font-bold">Mã cờ chiến thắng (CTF Flag Bài 9):</span>
+                      <code className="font-mono bg-black/80 px-2 py-1 rounded text-amber-300 font-extrabold select-all">
+                        FLAG&#123;clickjacking_ui_redressing_frame_ancestors_none&#125;
+                      </code>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const flagText = 'FLAG{clickjacking_ui_redressing_frame_ancestors_none}';
+                        navigator.clipboard.writeText(flagText);
+                        sound.playClick();
+                        setCopiedFlag(flagText);
+                        setTimeout(() => setCopiedFlag(null), 2000);
+                      }}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-mono text-xs font-bold transition-all shadow-sm cursor-pointer shrink-0"
+                    >
+                      {copiedFlag === 'FLAG{clickjacking_ui_redressing_frame_ancestors_none}' ? (
+                        <>
+                          <Check className="w-3.5 h-3.5 text-white" />
+                          <span>Đã sao chép cờ!</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3.5 h-3.5" />
+                          <span>Chạm để sao chép cờ</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                )}
 
                 {/* Opacity Slider */}
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
@@ -354,7 +392,7 @@ X-Frame-Options: DENY;`}
                       </li>
                       <li className="flex items-start gap-2">
                         <span className="text-emerald-400 font-bold">5.</span>
-                        <span><strong>Công Cụ Thật (Real-World Utility):</strong> Tích hợp trực tiếp với Bash thật của máy tính cá nhân qua WebSocket bridge bảo mật.</span>
+                        <span><strong>Công Cụ Trực Tiếp (Zero-Friction Sandbox):</strong> Tích hợp trực tiếp môi trường thực hành bảo mật chạy 100% độc lập trên trình duyệt và di động.</span>
                       </li>
                     </ul>
                   </div>

@@ -16,6 +16,7 @@ import {
   CheckCircle2,
   XCircle,
   Copy,
+  Check,
   Info,
   Server,
   Zap,
@@ -38,6 +39,7 @@ export const SandboxTab: React.FC = () => {
 
   const [executionResult, setExecutionResult] = useState<ExecutionResult | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [copiedFlag, setCopiedFlag] = useState<string | null>(null);
   const [copiedPayloadId, setCopiedPayloadId] = useState<string | null>(null);
 
   const currentScenario = SCENARIOS.find((s) => s.id === selectedScenarioId) || SCENARIOS[0];
@@ -148,7 +150,7 @@ export const SandboxTab: React.FC = () => {
                 '[SQLITE ENGINE]: Query parsed successfully. Condition evaluated to TRUE or UNION returned secondary result set.',
                 '[CRITICAL]: Zero credential check performed. Admin session issued.',
               ],
-              flagRevealed: 'flag{sQL1_1nj3ct10n_auth_byp4ss_succ3ss}',
+              flagRevealed: 'FLAG{sqli_auth_bypass_union_select_pwned}',
               defenseExplanation: 'Chuỗi f-string trong mã nguồn Python đã ghép nối trực tiếp chuỗi của hacker vào cú pháp SQL, biến mệnh đề WHERE thành điều kiện luôn đúng hoặc mở rộng UNION.',
               timestamp: new Date().toLocaleTimeString(),
             });
@@ -230,7 +232,7 @@ export const SandboxTab: React.FC = () => {
               httpStatus: 200,
               message: 'EXPLOIT SUCCESSFUL: Remote Code Execution (RCE) via Shell Metacharacter!',
               rawConsole: fakeOutput,
-              flagRevealed: 'flag{rC3_c0mm4nd_1nj3ct10n_pwn3d}',
+              flagRevealed: 'FLAG{rce_command_injection_shell_bypass_pwned}',
               defenseExplanation: 'subprocess.Popen với shell=True đã cho phép shell Linux phân tách dấu chấm phẩy (;) hoặc ống dẫn (|) và thực thi lệnh nguy hiểm với toàn quyền của tiến trình web.',
               timestamp: new Date().toLocaleTimeString(),
             });
@@ -307,7 +309,7 @@ export const SandboxTab: React.FC = () => {
                 unpaidBillingBalance: '$14,820.50 (Overdue)',
                 insurancePolicy: 'Cyberdyne Health Preferred #881923',
               },
-              flagRevealed: 'flag{1d0r_br0k3n_0bj3ct_auth_l34k}',
+              flagRevealed: 'FLAG{idor_broken_access_control_bola_2026}',
               defenseExplanation: 'Chỉ bằng cách thay đổi ?id=1002 trên URL, kẻ tấn công đã đọc trộm toàn bộ bệnh án và hóa đơn nhạy cảm vì backend không đối chiếu danh tính người yêu cầu.',
               timestamp: new Date().toLocaleTimeString(),
             });
@@ -324,7 +326,7 @@ export const SandboxTab: React.FC = () => {
                 vipEmergencyContact: '+1 (555) 019-2831 (Encrypted Satellite)',
                 privateVaultKeyId: 'VAULT_DIRECTOR_KEY_9921',
               },
-              flagRevealed: 'flag{1d0r_v1p_d1r3ct0r_d0ss13r}',
+              flagRevealed: 'FLAG{idor_broken_access_control_bola_2026}',
               defenseExplanation: 'IDOR nghiêm trọng trên tài khoản quản trị VIP cấp cao nhất.',
               timestamp: new Date().toLocaleTimeString(),
             });
@@ -366,7 +368,7 @@ export const SandboxTab: React.FC = () => {
               httpStatus: 200,
               message: 'EXPLOIT SUCCESSFUL: Reflected Cross-Site Scripting (XSS) Executed in Browser Context!',
               cookieStolen: 'session_auth=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjdXN0b21lcl84MTEyIiwicm9sZSI6InVzZXIifQ.x892fLa78129; bank_account=ACME_491823901',
-              flagRevealed: 'flag{xss_s3ss10n_c00k13_st0l3n_c2}',
+              flagRevealed: 'FLAG{xss_stored_reflected_csp_defense_2026}',
               defenseExplanation: 'Mã nguồn sử dụng <%- %> (in thô) khiến trình duyệt coi chuỗi nhập vào là mã HTML/JS hợp lệ. Đoạn script đã chạy ngầm và đọc sạch document.cookie.',
               timestamp: new Date().toLocaleTimeString(),
             });
@@ -940,14 +942,35 @@ export const SandboxTab: React.FC = () => {
 
                   {/* Leaked Flag (if CTF solved) */}
                   {executionResult.flagRevealed && securityMode === 'vulnerable' && (
-                    <div className="mb-3 p-3 rounded-xl bg-amber-950/50 border border-amber-500/60 flex items-center justify-between text-xs sm:text-sm shadow-md">
+                    <div className="mb-3 p-3 rounded-xl bg-amber-950/50 border border-amber-500/60 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs sm:text-sm shadow-md">
                       <div className="flex items-center gap-2 text-amber-200 flex-wrap">
                         <CheckCircle2 className="w-4 h-4 text-amber-400 shrink-0" />
-                        <span className="font-bold">Lab CTF Flag Captured:</span>
-                        <code className="font-mono bg-black/80 px-2 py-1 rounded text-amber-300 font-extrabold">
+                        <span className="font-bold">Mã cờ chiến thắng (CTF Flag):</span>
+                        <code className="font-mono bg-black/80 px-2 py-1 rounded text-amber-300 font-extrabold select-all">
                           {executionResult.flagRevealed}
                         </code>
                       </div>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(executionResult.flagRevealed!);
+                          sound.playClick();
+                          setCopiedFlag(executionResult.flagRevealed!);
+                          setTimeout(() => setCopiedFlag(null), 2000);
+                        }}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-mono text-xs font-bold transition-all shadow-sm cursor-pointer shrink-0"
+                      >
+                        {copiedFlag === executionResult.flagRevealed ? (
+                          <>
+                            <Check className="w-3.5 h-3.5 text-white" />
+                            <span>Đã sao chép cờ!</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-3.5 h-3.5" />
+                            <span>Chạm để sao chép cờ</span>
+                          </>
+                        )}
+                      </button>
                     </div>
                   )}
 

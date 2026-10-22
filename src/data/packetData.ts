@@ -61,7 +61,7 @@ export const CAPTURED_PACKETS: NetworkPacket[] = [
       ethernet: { srcMac: '00:0c:29:4a:1b:88', dstMac: '52:54:00:12:34:56', type: 'IPv4 (0x0800)' },
       ipHeader: { version: 4, headerLength: 20, ttl: 64, protocolNum: 6, checksum: '0x7e12' },
       transportHeader: { srcPort: 49152, dstPort: 80, flagsStr: '[SYN] Synchronize Sequence Numbers (ISN = 0 relative)', windowSize: 64240 },
-      appPayload: { body: 'TCP Connection Setup. Client requests new TCP session to 10.0.0.1:80. Maximum Segment Size = 1460 bytes.' },
+      appPayload: { body: 'TCP Connection Setup. Client requests new TCP session to 10.0.0.1:80. Maximum Segment Size = 1460 bytes. Handshake Flag: FLAG{tcp_handshake_port_80_captured}' },
     },
   },
   {
@@ -178,7 +178,7 @@ export const CAPTURED_PACKETS: NetworkPacket[] = [
     ack: 397,
     info: 'HTTP/1.1 200 OK (application/json) [EXPLOIT SUCCESSFUL]',
     payloadHex: '48 54 54 50 2f 31 2e 31 20 32 30 30 20 4f 4b 0d 0a 53 65 72 76 65 72 3a 20 41 70 61 63 68 65 2f 32 2e 34 2e 35 32 0d 0a 53 65 74 2d 43 6f 6f 6b 69 65 3a 20 73 65 73 73 69 6f 6e 3d 72 6f 6f 74 5f 61 64 6d 69 6e 5f 74 6f 6b 65 6e 5f 39 39 38 3b 20 50 61 74 68 3d 2f 0d 0a 43 6f 6e 74 65 6e 74 2d 54 79 70 65 3a 20 61 70 70 6c 69 63 61 74 69 6f 6e 2f 6a 73 6f 6e 0d 0a 0d 0a 7b 22 73 74 61 74 75 73 22 3a 22 61 75 74 68 65 6e 74 69 63 61 74 65 64 22 2c 22 75 73 65 72 22 3a 22 61 64 6d 69 6e 22 2c 22 72 6f 6c 65 22 3a 22 53 55 50 45 52 41 44 4d 49 4e 22 2c 22 73 65 63 72 65 74 22 3a 22 73 6b 5f 6c 69 76 65 5f 61 63 6d 65 5f 6d 61 73 74 65 72 5f 39 39 32 31 38 22 7d',
-    payloadAscii: 'HTTP/1.1 200 OK..Server: Apache/2.4.52..Set-Cookie: session=root_admin_token_998; Path=/..Content-Type: application/json....{"status":"authenticated","user":"admin","role":"SUPERADMIN","secret":"sk_live_acme_master_99218"}',
+    payloadAscii: 'HTTP/1.1 200 OK..Server: Apache/2.4.52..Set-Cookie: session=FLAG{http_stateless_cookie_httponly_flag}; Path=/..Content-Type: application/json....{"status":"authenticated","user":"admin","role":"SUPERADMIN","secret":"sk_live_acme_master_99218"}',
     details: {
       frame: 'Frame 8: 588 bytes on wire, Unprotected HTTP Response with Leaked Admin Session',
       ethernet: { srcMac: '52:54:00:12:34:56', dstMac: '00:0c:29:4a:1b:88', type: 'IPv4 (0x0800)' },
@@ -188,7 +188,7 @@ export const CAPTURED_PACKETS: NetworkPacket[] = [
         rawHeaders: {
           'Server': 'Apache/2.4.52 (Ubuntu)',
           'Content-Type': 'application/json',
-          'Set-Cookie': 'session=root_admin_token_998; Path=/',
+          'Set-Cookie': 'session=FLAG{http_stateless_cookie_httponly_flag}; Path=/',
         },
         body: '{"status":"authenticated","user":"admin","role":"SUPERADMIN","secret":"sk_live_acme_master_99218"}',
       },

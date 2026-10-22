@@ -16,6 +16,8 @@ import {
   RotateCcw,
   Sparkles,
   ExternalLink,
+  Copy,
+  Check,
 } from 'lucide-react';
 
 export const SocLogMatrixTab: React.FC = () => {
@@ -31,6 +33,7 @@ export const SocLogMatrixTab: React.FC = () => {
   const [q3Answer, setQ3Answer] = useState<string>('');
   const [quizSubmitted, setQuizSubmitted] = useState<boolean>(false);
   const [quizScore, setQuizScore] = useState<number>(0);
+  const [copiedFlag, setCopiedFlag] = useState<string | null>(null);
 
   const selectedLog = logs.find((l) => l.id === selectedLogId) || logs[0];
 
@@ -449,6 +452,41 @@ export const SocLogMatrixTab: React.FC = () => {
                   {quizScore}/100 ĐIỂM {quizScore === 100 && '🏆 XUẤT SẮC!'}
                 </span>
               </div>
+
+              {quizScore >= 67 && (
+                <div className="p-3.5 rounded-xl bg-amber-950/50 border border-amber-500/60 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs sm:text-sm shadow-md">
+                  <div className="flex items-center gap-2 text-amber-200 flex-wrap">
+                    <CheckCircle2 className="w-4 h-4 text-amber-400 shrink-0" />
+                    <span className="font-bold">Mã cờ chiến thắng (CTF Flag):</span>
+                    <code className="font-mono bg-black/80 px-2 py-1 rounded text-amber-300 font-extrabold select-all">
+                      FLAG&#123;soc_analyst_apache_log_triage_2026&#125;
+                    </code>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const flagText = 'FLAG{soc_analyst_apache_log_triage_2026}';
+                      navigator.clipboard.writeText(flagText);
+                      sound.playClick();
+                      setCopiedFlag(flagText);
+                      setTimeout(() => setCopiedFlag(null), 2000);
+                    }}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-mono text-xs font-bold transition-all shadow-sm cursor-pointer shrink-0"
+                  >
+                    {copiedFlag === 'FLAG{soc_analyst_apache_log_triage_2026}' ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 text-white" />
+                        <span>Đã sao chép cờ!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5" />
+                        <span>Chạm để sao chép cờ</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              )}
 
               <div className="space-y-2.5 text-xs sm:text-sm leading-relaxed text-slate-200">
                 <div className="p-3 rounded-xl bg-black/60 border border-slate-800 space-y-1">

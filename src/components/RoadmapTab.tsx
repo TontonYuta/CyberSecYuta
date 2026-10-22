@@ -12,6 +12,7 @@ import {
   FileText,
   RotateCcw,
   Zap,
+  Check,
 } from 'lucide-react';
 
 interface StageSkill {
@@ -140,6 +141,8 @@ export const RoadmapTab: React.FC = () => {
   const [exploitChain, setExploitChain] = useState<string>(WRITEUP_TEMPLATES.sqli.exploitChain);
   const [remediation, setRemediation] = useState<string>(WRITEUP_TEMPLATES.sqli.remediation);
   const [copiedStatus, setCopiedStatus] = useState<boolean>(false);
+  const [showWriteupFlag, setShowWriteupFlag] = useState<boolean>(false);
+  const [copiedFlag, setCopiedFlag] = useState<string | null>(null);
   const [mobileTab, setMobileTab] = useState<'roadmap' | 'writeup'>('roadmap');
 
   // Sync to localStorage
@@ -205,11 +208,13 @@ ${remediation}
     sound.playSuccess();
     navigator.clipboard.writeText(generateMarkdown());
     setCopiedStatus(true);
+    setShowWriteupFlag(true);
     setTimeout(() => setCopiedStatus(false), 2000);
   };
 
   const handleDownloadMarkdown = () => {
     sound.playSuccess();
+    setShowWriteupFlag(true);
     const md = generateMarkdown();
     const blob = new Blob([md], { type: 'text/markdown;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -356,6 +361,50 @@ ${remediation}
                 </div>
               );
             })}
+
+            {/* Capstone Final Master Challenge Banner */}
+            <div className="p-4 rounded-xl bg-gradient-to-r from-emerald-950/60 to-slate-900 border border-emerald-500/50 shadow-lg space-y-2.5">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <span className="text-xs sm:text-sm font-extrabold text-emerald-300 flex items-center gap-1.5">
+                  <Award className="w-4 h-4 text-amber-400" />
+                  <span>Đồ Án Tốt Nghiệp Capstone (Bài 13 CTF)</span>
+                </span>
+                <span className="text-xs font-mono text-emerald-400 font-bold bg-emerald-950 px-2 py-0.5 rounded border border-emerald-500/40">
+                  {progressPercent}% HOÀN THÀNH
+                </span>
+              </div>
+              <p className="text-xs text-slate-300 leading-relaxed">
+                Bạn đã vượt qua toàn bộ các kỹ năng cốt lõi. Đây là mã cờ Capstone chứng nhận tốt nghiệp chính thức của bạn:
+              </p>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-2.5 rounded-lg bg-black/80 border border-emerald-500/40">
+                <code className="font-mono text-xs sm:text-sm font-extrabold text-emerald-300">
+                  FLAG&#123;cybersecyuta_capstone_certified_master_2026&#125;
+                </code>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const capstoneFlag = 'FLAG{cybersecyuta_capstone_certified_master_2026}';
+                    navigator.clipboard.writeText(capstoneFlag);
+                    sound.playClick();
+                    setCopiedFlag(capstoneFlag);
+                    setTimeout(() => setCopiedFlag(null), 2000);
+                  }}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-mono text-xs font-bold transition-all shadow-sm cursor-pointer shrink-0"
+                >
+                  {copiedFlag === 'FLAG{cybersecyuta_capstone_certified_master_2026}' ? (
+                    <>
+                      <Check className="w-3.5 h-3.5 text-white" />
+                      <span>Đã sao chép!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3.5 h-3.5" />
+                      <span>Sao chép cờ</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -479,6 +528,42 @@ ${remediation}
               />
             </div>
           </div>
+
+          {/* Writeup CTF Flag Revealed Banner */}
+          {showWriteupFlag && (
+            <div className="mx-3.5 sm:mx-5 mb-2 p-3.5 rounded-xl bg-amber-950/50 border border-amber-500/60 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs sm:text-sm shadow-md animate-fadeIn">
+              <div className="flex items-center gap-2 text-amber-200 flex-wrap">
+                <CheckCircle2 className="w-4 h-4 text-amber-400 shrink-0" />
+                <span className="font-bold">Mã cờ chiến thắng (CTF Flag Bài 12):</span>
+                <code className="font-mono bg-black/80 px-2 py-1 rounded text-amber-300 font-extrabold select-all">
+                  FLAG&#123;feynman_security_writeup_master_2026&#125;
+                </code>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  const flagText = 'FLAG{feynman_security_writeup_master_2026}';
+                  navigator.clipboard.writeText(flagText);
+                  sound.playClick();
+                  setCopiedFlag(flagText);
+                  setTimeout(() => setCopiedFlag(null), 2000);
+                }}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-mono text-xs font-bold transition-all shadow-sm cursor-pointer shrink-0"
+              >
+                {copiedFlag === 'FLAG{feynman_security_writeup_master_2026}' ? (
+                  <>
+                    <Check className="w-3.5 h-3.5 text-white" />
+                    <span>Đã sao chép cờ!</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-3.5 h-3.5" />
+                    <span>Chạm để sao chép cờ</span>
+                  </>
+                )}
+              </button>
+            </div>
+          )}
 
           {/* Action Export Footer Bar */}
           <div className="p-3.5 bg-[#0e1628] border-t border-[#1e293b] flex flex-wrap items-center justify-between gap-3 shrink-0 shadow-sm">
