@@ -1,5 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { sound } from '../utils/audio';
+import { MobileConnectModal } from './MobileConnectModal';
 import {
   Terminal,
   ShieldAlert,
@@ -20,6 +21,9 @@ import {
   AlertCircle,
   Play,
   RotateCcw,
+  Smartphone,
+  QrCode,
+  Wifi,
 } from 'lucide-react';
 
 interface TerminalLine {
@@ -40,19 +44,41 @@ interface BridgeInfo {
   user: string;
   homeDir: string;
   shell: string;
+  lanIp?: string;
+  mobileUrl?: string;
+  wsUrl?: string;
 }
 
 export const HackerTerminalTab: React.FC = () => {
   // Mode selection: 'real_bash' (actual local laptop bash via WebSocket bridge) vs 'simulated' (web sandbox)
   const [terminalMode, setTerminalMode] = useState<'real_bash' | 'simulated'>('real_bash');
   
+  // Bridge host management (can be 127.0.0.1:3001, 192.168.0.109:3001, or tunnel URL)
+  const [bridgeHost, setBridgeHost] = useState<string>(() => {
+    try {
+      const saved = localStorage.getItem('cybersec_bridge_host');
+      if (saved) return saved;
+    } catch {
+      // Ignore
+    }
+    // Default smart guess
+    if (typeof window !== 'undefined') {
+      const currentHost = window.location.hostname;
+      if (currentHost && currentHost !== 'localhost' && currentHost !== '127.0.0.1' && !currentHost.includes('vercel.app')) {
+        return `${currentHost}:3001`;
+      }
+    }
+    return '127.0.0.1:3001';
+  });
+
   // Real bash bridge state
   const [bridgeStatus, setBridgeStatus] = useState<'checking' | 'connected' | 'disconnected'>('checking');
   const [bridgeInfo, setBridgeInfo] = useState<BridgeInfo | null>(null);
   const [copiedServerCmd, setCopiedServerCmd] = useState<boolean>(false);
+  const [isMobileModalOpen, setIsMobileModalOpen] = useState<boolean>(false);
   const wsRef = useRef<WebSocket | null>(null);
 
-  // Machine session states (for simulation)
+  // Machine session states (for simulation fallback)
   const [sessionState, setSessionState] = useState<'target_user' | 'target_root'>('target_user');
   const [currentDir, setCurrentDir] = useState<string>('/var/www/html');
   const [commandInput, setCommandInput] = useState<string>('');
@@ -60,9 +86,7 @@ export const HackerTerminalTab: React.FC = () => {
   const [historyIdx, setHistoryIdx] = useState<number>(-1);
   const [hasEscalated, setHasEscalated] = useState<boolean>(false);
   const [showCelebration, setShowCelebration] = useState<boolean>(false);
-  const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
   const [copiedFlag, setCopiedFlag] = useState<boolean>(false);
-  const [mobileTab, setMobileTab] = useState<'terminal' | 'briefing'>('terminal');
 
   const terminalEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -81,13 +105,28 @@ export const HackerTerminalTab: React.FC = () => {
     },
   ]);
 
-  // Check health and establish WebSocket to local bridge
-  const checkAndConnectBridge = async () => {
+  // Check health and establish WebSocket to bridge
+  const checkAndConnectBridge = useCallback(async (targetHost?: string) => {
+    const activeHost = (targetHost || bridgeHost).trim().replace(/^https?:\/\//, '').replace(/\/$/, '');
     setBridgeStatus('checking');
+
+    const isSecure = typeof window !== 'undefined' && window.location.protocol === 'https:';
+    // If target host includes a custom protocol or is on localhost
+    const httpProtocol = isSecure && !activeHost.startsWith('127.0.0.1') && !activeHost.startsWith('localhost') && !activeHost.startsWith('192.168.') ? 'https://' : 'http://';
+    const wsProtocol = httpProtocol === 'https://' ? 'wss://' : 'ws://';
+
     try {
-      // 1. Healthcheck HTTP
-      const res = await fetch('http://127.0.0.1:3001/status', { method: 'GET' });
-      if (!res.ok) throw new Error('Status not ok');
+      // 1. Healthcheck HTTP with 3.5s timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3500);
+
+      const res = await fetch(`${httpProtocol}${activeHost}/status`, {
+        method: 'GET',
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+
+      if (!res.ok) throw new Error('Status endpoint not ok');
       const data: BridgeInfo = await res.json();
       setBridgeInfo(data);
 
@@ -96,7 +135,7 @@ export const HackerTerminalTab: React.FC = () => {
         wsRef.current.close();
       }
 
-      const ws = new WebSocket('ws://127.0.0.1:3001/bash');
+      const ws = new WebSocket(`${wsProtocol}${activeHost}/bash`);
       wsRef.current = ws;
 
       ws.onopen = () => {
@@ -107,17 +146,17 @@ export const HackerTerminalTab: React.FC = () => {
           {
             id: `ws-conn-${Date.now()}`,
             type: 'success',
-            text: `✅ [KẾT NỐI THÀNH CÔNG] Đã gắn trực tiếp vào Bash thực tế của máy tính cá nhân!`,
+            text: `✅ [KẾT NỐI THÀNH CÔNG] Đã gắn trực tiếp vào Bash của máy tính (${data.user}@${data.hostname})!`,
           },
           {
             id: `ws-info-${Date.now()}`,
             type: 'system',
-            text: `Host: ${data.hostname} | User: ${data.user} | Shell: ${data.shell} | CWD: ${data.homeDir}`,
+            text: `Host: ${data.hostname} | Shell: ${data.shell} | IP LAN: ${data.lanIp || activeHost} | CWD: ${data.homeDir}`,
           },
           {
             id: `ws-guide-${Date.now()}`,
             type: 'output',
-            text: `Mọi câu lệnh bạn gõ (ls, whoami, uname -a, ip a, curl, ...) sẽ được thực thi trực tiếp trên hệ điều hành của bạn.`,
+            text: `Mọi câu lệnh bạn gõ trên điện thoại hay máy tính đều được thực thi trực tiếp trên hệ điều hành máy tính.`,
           },
         ]);
       };
@@ -140,11 +179,8 @@ export const HackerTerminalTab: React.FC = () => {
             }
           } else if (payload.type === 'clear') {
             setLines([]);
-          } else if (payload.type === 'handshake') {
-            // Already handled in onopen
           }
         } catch {
-          // If raw text
           if (event.data) {
             setLines((prev) => [
               ...prev,
@@ -168,6 +204,34 @@ export const HackerTerminalTab: React.FC = () => {
     } catch {
       setBridgeStatus('disconnected');
     }
+  }, [bridgeHost]);
+
+  // Test connection function for modal
+  const handleTestConnection = async (hostToTest: string): Promise<boolean> => {
+    const clean = hostToTest.trim().replace(/^https?:\/\//, '').replace(/\/$/, '');
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3500);
+
+      const res = await fetch(`http://${clean}/status`, {
+        method: 'GET',
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+      return res.ok;
+    } catch {
+      return false;
+    }
+  };
+
+  const handleSaveBridgeHost = (newHost: string) => {
+    setBridgeHost(newHost);
+    try {
+      localStorage.setItem('cybersec_bridge_host', newHost);
+    } catch {
+      // Ignore
+    }
+    checkAndConnectBridge(newHost);
   };
 
   useEffect(() => {
@@ -178,7 +242,7 @@ export const HackerTerminalTab: React.FC = () => {
         wsRef.current.close();
       }
     };
-  }, []);
+  }, [checkAndConnectBridge]);
 
   // Auto scroll to bottom
   useEffect(() => {
@@ -191,8 +255,6 @@ export const HackerTerminalTab: React.FC = () => {
     if (!rawCmd) return;
 
     sound.playKeypress();
-
-    // Add to history
     setHistory((prev) => [...prev, rawCmd]);
     setHistoryIdx(-1);
 
@@ -244,14 +306,12 @@ export const HackerTerminalTab: React.FC = () => {
 
     const cmd = rawCmd.toLowerCase();
 
-    // Clear
     if (cmd === 'clear') {
       setLines([]);
       setCommandInput('');
       return;
     }
 
-    // Help
     if (cmd === 'help') {
       newEntries.push({
         id: `out-${Date.now()}-1`,
@@ -304,10 +364,6 @@ export const HackerTerminalTab: React.FC = () => {
 drwxr-xr-x  18 root root  4096 Oct 22 00:00 .
 drwxr-xr-x  18 root root  4096 Oct 22 00:00 ..
 drwxr-xr-x   2 root root  4096 May 15 17:35 bin
-drwxr-xr-x   3 root root  4096 May 15 17:35 boot
-drwxr-xr-x  14 root root  3120 Oct 22 00:00 dev
-drwxr-xr-x  85 root root  4096 Oct 22 00:00 etc
-drwxr-xr-x   3 root root  4096 May 15 17:35 home
 drwx------   4 root root  4096 Oct 22 00:00 root
 -r--------   1 root root    52 Oct 22 00:00 /root/flag.txt`,
         });
@@ -319,7 +375,6 @@ drwx------   4 root root  4096 Oct 22 00:00 root
 drwxr-xr-x 2 www-data www-data 4096 Oct 22 00:00 .
 drwxr-xr-x 3 root     root     4096 Oct 22 00:00 ..
 -rw-r--r-- 1 www-data www-data 1240 Oct 22 00:00 index.php
--rw-r--r-- 1 www-data www-data 3450 Oct 22 00:00 config.php
 -rw-r--r-- 1 www-data www-data   45 Oct 22 00:00 .flag_backup.txt`,
         });
       }
@@ -329,20 +384,14 @@ drwxr-xr-x 3 root     root     4096 Oct 22 00:00 ..
         newEntries.push({
           id: `out-${Date.now()}-passwd`,
           type: 'output',
-          text: `root:x:0:0:root:/root:/bin/bash
-daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin
-bin:x:2:2:bin:/bin:/usr/sbin/nologin
-sys:x:3:3:sys:/dev:/usr/sbin/nologin
-www-data:x:33:33:www-data:/var/www:/usr/sbin/nologin
-sysadmin:x:1000:1000:Sysadmin:/home/sysadmin:/bin/bash`,
+          text: `root:x:0:0:root:/root:/bin/bash\nwww-data:x:33:33:www-data:/var/www:/usr/sbin/nologin\nsysadmin:x:1000:1000:Sysadmin:/home/sysadmin:/bin/bash`,
         });
       } else if (target === '/root/flag.txt') {
         if (isRoot) {
           newEntries.push({
             id: `out-${Date.now()}-flag`,
             type: 'success',
-            text: `🚩 FLAG{gtfobins_sudo_find_root_pwned_2026}
-[CHÚC MỪNG] Bạn đã leo quyền root thành công và chiếm trọn cờ máy chủ!`,
+            text: `🚩 FLAG{gtfobins_sudo_find_root_pwned_2026}\n[CHÚC MỪNG] Bạn đã leo quyền root thành công!`,
           });
           sound.playSuccess();
           setHasEscalated(true);
@@ -351,16 +400,10 @@ sysadmin:x:1000:1000:Sysadmin:/home/sysadmin:/bin/bash`,
           newEntries.push({
             id: `out-${Date.now()}-flag-deny`,
             type: 'error',
-            text: 'cat: /root/flag.txt: Permission denied (Bạn cần quyền root để đọc tệp này!)',
+            text: 'cat: /root/flag.txt: Permission denied (Bạn cần quyền root!)',
           });
           sound.playError();
         }
-      } else if (target === '/var/www/html/.flag_backup.txt' || target === '.flag_backup.txt') {
-        newEntries.push({
-          id: `out-${Date.now()}-flag-user`,
-          type: 'success',
-          text: 'FLAG{linux_cli_bandit_explorer_2026}',
-        });
       } else {
         newEntries.push({
           id: `out-${Date.now()}-cat`,
@@ -372,16 +415,7 @@ sysadmin:x:1000:1000:Sysadmin:/home/sysadmin:/bin/bash`,
       newEntries.push({
         id: `out-${Date.now()}-sudol`,
         type: 'output',
-        text: `Matching Defaults entries for www-data on target:
-    env_reset, mail_badpass, secure_path=/usr/local/sbin\\:/usr/local/bin\\:/usr/sbin\\:/usr/bin
-
-User www-data may run the following commands on target:
-    (root) NOPASSWD: /usr/bin/find`,
-      });
-      newEntries.push({
-        id: `out-${Date.now()}-sudol-tip`,
-        type: 'system',
-        text: '💡 [PHÁT HIỆN LỖ HỔNG GTFOBins]: Bạn được phép chạy /usr/bin/find với quyền root không cần mật khẩu! Thử lệnh: sudo find . -exec /bin/sh \\;',
+        text: `User www-data may run the following commands on target:\n    (root) NOPASSWD: /usr/bin/find`,
       });
     } else if (
       cmd.includes('sudo find') &&
@@ -393,30 +427,13 @@ User www-data may run the following commands on target:
       newEntries.push({
         id: `out-${Date.now()}-privesc`,
         type: 'success',
-        text: `[!] Đang kích hoạt tiến trình con qua tham số -exec của find...
-[+] Spawning shell với đặc quyền root (UID=0)...
-[#] CHÀO MỪNG BẠN ĐẾN VỚI ROOT SHELL! (Gõ "whoami" hoặc "cat /root/flag.txt")`,
+        text: `[!] Đang kích hoạt tiến trình con qua -exec của find...\n[+] Spawning shell với đặc quyền root (UID=0)...`,
       });
-    } else if (cmd === 'exit') {
-      if (isRoot) {
-        setSessionState('target_user');
-        newEntries.push({
-          id: `out-${Date.now()}-exit`,
-          type: 'output',
-          text: 'exit: Trở lại phiên làm việc www-data.',
-        });
-      } else {
-        newEntries.push({
-          id: `out-${Date.now()}-exit-deny`,
-          type: 'output',
-          text: 'Phiên kết nối terminal không thể thoát.',
-        });
-      }
     } else {
       newEntries.push({
         id: `out-${Date.now()}-unknown`,
         type: 'error',
-        text: `bash: ${rawCmd}: command not found (Gõ "help" để xem danh sách lệnh hỗ trợ)`,
+        text: `bash: ${rawCmd}: command not found (Gõ "help" để xem danh sách lệnh)`,
       });
       sound.playError();
     }
@@ -427,99 +444,111 @@ User www-data may run the following commands on target:
 
   const copyServerCommand = () => {
     navigator.clipboard.writeText('npm run bash-server');
+    sound.playClick();
     setCopiedServerCmd(true);
     setTimeout(() => setCopiedServerCmd(false), 2000);
   };
 
   return (
     <div className="flex flex-col h-full bg-[#070b14] text-slate-100 font-sans">
-      {/* Top Bar with Mode Switcher */}
-      <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 bg-[#0d1322] border-b border-slate-800 shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
+      {/* Top Bar with Mode Switcher & Mobile Phone Connect Button */}
+      <div className="flex flex-wrap items-center justify-between gap-2.5 px-3.5 py-2.5 bg-[#0d1322] border-b border-slate-800 shrink-0">
+        <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-rose-500/80 inline-block" />
             <span className="w-2.5 h-2.5 rounded-full bg-amber-500/80 inline-block" />
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/80 inline-block" />
           </div>
           <span className="font-mono text-xs font-semibold text-slate-300">
             {terminalMode === 'real_bash'
-              ? `bash://${bridgeInfo?.user || 'user'}@${bridgeInfo?.hostname || 'localhost'}`
-              : 'sandbox://target.local:22 (www-data)'}
+              ? `bash://${bridgeInfo?.user || 'user'}@${bridgeHost}`
+              : 'sandbox://target.local:22'}
           </span>
         </div>
 
-        {/* Mode Switcher Pill */}
-        <div className="flex items-center gap-1.5 p-1 bg-slate-900/90 rounded-lg border border-slate-800">
+        {/* Action Controls Group */}
+        <div className="flex items-center gap-2">
+          {/* Mobile / Laptop Connect Button */}
           <button
             onClick={() => {
-              setTerminalMode('real_bash');
-              if (bridgeStatus === 'disconnected') checkAndConnectBridge();
+              sound.playClick();
+              setIsMobileModalOpen(true);
             }}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
-              terminalMode === 'real_bash'
-                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm'
-                : 'text-slate-400 hover:text-slate-200'
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
+              bridgeStatus === 'connected'
+                ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/30'
+                : 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40 hover:bg-cyan-500/30'
             }`}
+            title="Kết nối bash với điện thoại thông minh qua QR hoặc Wi-Fi IP"
           >
-            <Laptop className="w-3.5 h-3.5" />
-            <span>💻 Bash Máy Cá Nhân</span>
+            <Smartphone className="w-3.5 h-3.5 text-cyan-400" />
+            <span className="hidden sm:inline">📱 Kết Nối Điện Thoại</span>
+            <span className="sm:hidden">📱 Kết Nối Máy</span>
             <span
               className={`w-2 h-2 rounded-full ${
-                bridgeStatus === 'connected'
-                  ? 'bg-emerald-400 animate-pulse'
-                  : bridgeStatus === 'checking'
-                  ? 'bg-amber-400 animate-ping'
-                  : 'bg-rose-500'
+                bridgeStatus === 'connected' ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'
               }`}
             />
           </button>
 
-          <button
-            onClick={() => setTerminalMode('simulated')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
-              terminalMode === 'simulated'
-                ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            <Globe className="w-3.5 h-3.5" />
-            <span>🌐 Sandbox Giả Lập</span>
-          </button>
+          {/* Mode Switcher Pill */}
+          <div className="flex items-center gap-1 p-1 bg-slate-900/90 rounded-lg border border-slate-800">
+            <button
+              onClick={() => {
+                setTerminalMode('real_bash');
+                if (bridgeStatus === 'disconnected') checkAndConnectBridge();
+              }}
+              className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium transition-all ${
+                terminalMode === 'real_bash'
+                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <Laptop className="w-3.5 h-3.5" />
+              <span className="hidden md:inline">Bash Thật</span>
+              <span className="md:hidden">Thật</span>
+            </button>
+
+            <button
+              onClick={() => setTerminalMode('simulated')}
+              className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium transition-all ${
+                terminalMode === 'simulated'
+                  ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <Globe className="w-3.5 h-3.5" />
+              <span className="hidden md:inline">Sandbox</span>
+              <span className="md:hidden">Giả Lập</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Real Bash Bridge Notice (if disconnected) */}
+      {/* Mobile Notice Bar (Prompting user to connect phone to laptop) */}
       {terminalMode === 'real_bash' && bridgeStatus === 'disconnected' && (
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 px-4 py-2.5 bg-amber-950/40 border-b border-amber-800/40 text-xs text-amber-200 shrink-0">
           <div className="flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" />
+            <Smartphone className="w-4 h-4 text-amber-400 shrink-0" />
             <span>
-              Chưa bật Daemon máy cá nhân. Mở terminal trên máy và gõ:{' '}
-              <code className="px-1.5 py-0.5 rounded bg-black/60 font-mono text-amber-300 border border-amber-800/50">
-                npm run bash-server
-              </code>
+              <strong>Dùng trên điện thoại:</strong> Bấm nút <strong>"📱 Kết Nối Điện Thoại"</strong> hoặc quét mã QR Wi-Fi để dùng Bash của máy tính!
             </span>
           </div>
+
           <div className="flex items-center gap-2 w-full sm:w-auto">
             <button
-              onClick={copyServerCommand}
-              className="flex items-center justify-center gap-1 px-2.5 py-1 rounded bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border border-amber-500/40 transition-colors"
+              onClick={() => setIsMobileModalOpen(true)}
+              className="flex items-center justify-center gap-1 px-2.5 py-1 rounded bg-cyan-600 hover:bg-cyan-500 text-white font-semibold transition-colors"
             >
-              {copiedServerCmd ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-              <span>{copiedServerCmd ? 'Đã sao chép' : 'Copy lệnh'}</span>
+              <QrCode className="w-3.5 h-3.5" />
+              <span>Mở Mã QR & IP</span>
             </button>
             <button
-              onClick={checkAndConnectBridge}
+              onClick={() => checkAndConnectBridge()}
               className="flex items-center justify-center gap-1 px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-colors"
             >
               <RefreshCw className="w-3.5 h-3.5" />
               <span>Thử lại</span>
-            </button>
-            <button
-              onClick={() => setTerminalMode('simulated')}
-              className="text-xs text-slate-400 underline hover:text-slate-200 ml-1"
-            >
-              Dùng Sandbox
             </button>
           </div>
         </div>
@@ -630,11 +659,22 @@ User www-data may run the following commands on target:
 
         <button
           type="submit"
-          className="px-3 py-1.5 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white font-mono text-xs font-medium transition-colors shrink-0"
+          className="px-3.5 py-1.5 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white font-mono text-xs font-medium transition-colors shrink-0"
         >
           Chạy
         </button>
       </form>
+
+      {/* Mobile Connection Modal */}
+      <MobileConnectModal
+        isOpen={isMobileModalOpen}
+        onClose={() => setIsMobileModalOpen(false)}
+        detectedLanIp={bridgeInfo?.lanIp || '192.168.0.109'}
+        currentBridgeHost={bridgeHost}
+        onSaveBridgeHost={handleSaveBridgeHost}
+        onTestConnection={handleTestConnection}
+        isConnected={bridgeStatus === 'connected'}
+      />
     </div>
   );
 };
