@@ -110,35 +110,48 @@ export const HackerTerminalTab: React.FC = () => {
 
   // Check health and establish WebSocket to bridge
   const checkAndConnectBridge = useCallback(async (targetHost?: string) => {
-    const activeHost = (targetHost || bridgeHost).trim().replace(/^https?:\/\//, '').replace(/\/$/, '');
+    const raw = (targetHost || bridgeHost).trim();
+    const clean = raw
+      .replace(/^(https?|wss?):\/\//, '')
+      .replace(/\/bash$/, '')
+      .replace(/\/status$/, '')
+      .replace(/\/$/, '');
+
+    if (!clean) return;
     setBridgeStatus('checking');
 
-    const isSecure = typeof window !== 'undefined' && window.location.protocol === 'https:';
-    // If target host includes a custom protocol or is on localhost
-    const httpProtocol = isSecure && !activeHost.startsWith('127.0.0.1') && !activeHost.startsWith('localhost') && !activeHost.startsWith('192.168.') ? 'https://' : 'http://';
-    const wsProtocol = httpProtocol === 'https://' ? 'wss://' : 'ws://';
+    const isTunnel = clean.includes('trycloudflare.com') || clean.includes('.loca.lt') || clean.includes('ngrok');
+    const isPageHttps = typeof window !== 'undefined' && window.location.protocol === 'https:';
+    const useSsl = isTunnel || (isPageHttps && !clean.startsWith('127.0.0.1') && !clean.startsWith('localhost') && !clean.startsWith('192.168.'));
+    const httpProtocol = useSsl ? 'https://' : 'http://';
+    const wsProtocol = useSsl ? 'wss://' : 'ws://';
 
+    // 1. Try healthcheck HTTP optionally for metadata (non-fatal if blocked by CORS/Mixed Content)
     try {
-      // 1. Healthcheck HTTP with 3.5s timeout
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3500);
+      const timeoutId = setTimeout(() => controller.abort(), 2500);
 
-      const res = await fetch(`${httpProtocol}${activeHost}/status`, {
+      const res = await fetch(`${httpProtocol}${clean}/status`, {
         method: 'GET',
         signal: controller.signal,
       });
       clearTimeout(timeoutId);
 
-      if (!res.ok) throw new Error('Status endpoint not ok');
-      const data: BridgeInfo = await res.json();
-      setBridgeInfo(data);
+      if (res.ok) {
+        const data: BridgeInfo = await res.json();
+        setBridgeInfo(data);
+      }
+    } catch {
+      // Non-fatal: WebSocket can still succeed even if HTTP fetch is blocked by browser security
+    }
 
-      // 2. Open WebSocket
+    // 2. Open WebSocket
+    try {
       if (wsRef.current) {
         wsRef.current.close();
       }
 
-      const ws = new WebSocket(`${wsProtocol}${activeHost}/bash`);
+      const ws = new WebSocket(`${wsProtocol}${clean}/bash`);
       wsRef.current = ws;
 
       ws.onopen = () => {
@@ -149,17 +162,12 @@ export const HackerTerminalTab: React.FC = () => {
           {
             id: `ws-conn-${Date.now()}`,
             type: 'success',
-            text: `✅ [KẾT NỐI THÀNH CÔNG] Đã gắn trực tiếp vào Bash của máy tính (${data.user}@${data.hostname})!`,
+            text: `✅ [KẾT NỐI THÀNH CÔNG] Đã gắn trực tiếp vào Bash của máy tính qua ${isTunnel ? 'Cloudflare Tunnel (4G/5G Remote)' : 'Mạng Wi-Fi'}!`,
           },
           {
             id: `ws-info-${Date.now()}`,
             type: 'system',
-            text: `Host: ${data.hostname} | Shell: ${data.shell} | IP LAN: ${data.lanIp || activeHost} | CWD: ${data.homeDir}`,
-          },
-          {
-            id: `ws-guide-${Date.now()}`,
-            type: 'output',
-            text: `Mọi câu lệnh bạn gõ trên điện thoại hay máy tính đều được thực thi trực tiếp trên hệ điều hành máy tính.`,
+            text: `Target: ${clean} | Giao thức: ${wsProtocol.toUpperCase()} | Trạng thái: Sẵn sàng thực thi lệnh thật`,
           },
         ]);
       };
@@ -182,6 +190,21 @@ export const HackerTerminalTab: React.FC = () => {
             }
           } else if (payload.type === 'clear') {
             setLines([]);
+          } else if (payload.type === 'handshake') {
+            if (payload.user && payload.hostname) {
+              setBridgeInfo((prev) => ({
+                status: 'online',
+                hostname: payload.hostname,
+                platform: 'linux',
+                arch: 'x64',
+                user: payload.user,
+                homeDir: payload.cwd || '/home',
+                shell: '/bin/bash',
+                lanIp: payload.lanIp,
+                tunnelUrl: payload.tunnelUrl,
+                ...prev,
+              }));
+            }
           }
         } catch {
           if (event.data) {
@@ -209,22 +232,85 @@ export const HackerTerminalTab: React.FC = () => {
     }
   }, [bridgeHost]);
 
-  // Test connection function for modal
+  // Robust test connection function testing both HTTP fetch and direct WebSocket
   const handleTestConnection = async (hostToTest: string): Promise<boolean> => {
-    const clean = hostToTest.trim().replace(/^https?:\/\//, '').replace(/\/$/, '');
+    const raw = hostToTest.trim();
+    const clean = raw
+      .replace(/^(https?|wss?):\/\//, '')
+      .replace(/\/bash$/, '')
+      .replace(/\/status$/, '')
+      .replace(/\/$/, '');
+
+    if (!clean) return false;
+
+    const isTunnel = clean.includes('trycloudflare.com') || clean.includes('.loca.lt') || clean.includes('ngrok');
+    const isPageHttps = typeof window !== 'undefined' && window.location.protocol === 'https:';
+    const useSsl = isTunnel || (isPageHttps && !clean.startsWith('127.0.0.1') && !clean.startsWith('localhost') && !clean.startsWith('192.168.'));
+    const httpProtocol = useSsl ? 'https://' : 'http://';
+    const wsProtocol = useSsl ? 'wss://' : 'ws://';
+
+    // 1. Try fast HTTP fetch first
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3500);
+      const timeoutId = setTimeout(() => controller.abort(), 2500);
 
-      const res = await fetch(`http://${clean}/status`, {
+      const res = await fetch(`${httpProtocol}${clean}/status`, {
         method: 'GET',
         signal: controller.signal,
       });
       clearTimeout(timeoutId);
-      return res.ok;
+      if (res.ok) return true;
     } catch {
-      return false;
+      // Proceed to WebSocket verification test
     }
+
+    // 2. Direct WebSocket verification test (immune to browser HTTP mixed content blocks)
+    return new Promise<boolean>((resolve) => {
+      try {
+        const testWs = new WebSocket(`${wsProtocol}${clean}/bash`);
+        let finished = false;
+
+        const timer = setTimeout(() => {
+          if (!finished) {
+            finished = true;
+            try {
+              testWs.close();
+            } catch {
+              // Ignore
+            }
+            resolve(false);
+          }
+        }, 3500);
+
+        testWs.onopen = () => {
+          if (!finished) {
+            finished = true;
+            clearTimeout(timer);
+            try {
+              testWs.close();
+            } catch {
+              // Ignore
+            }
+            resolve(true);
+          }
+        };
+
+        testWs.onerror = () => {
+          if (!finished) {
+            finished = true;
+            clearTimeout(timer);
+            try {
+              testWs.close();
+            } catch {
+              // Ignore
+            }
+            resolve(false);
+          }
+        };
+      } catch {
+        resolve(false);
+      }
+    });
   };
 
   const handleSaveBridgeHost = (newHost: string) => {

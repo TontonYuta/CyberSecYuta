@@ -86,7 +86,13 @@ export const MobileConnectModal: React.FC<MobileConnectModalProps> = ({
 
   const handleTestAndSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    const cleanHost = hostInput.trim().replace(/^https?:\/\//, '').replace(/\/$/, '');
+    const cleanHost = hostInput
+      .trim()
+      .replace(/^(https?|wss?):\/\//, '')
+      .replace(/\/bash$/, '')
+      .replace(/\/status$/, '')
+      .replace(/\/$/, '');
+
     if (!cleanHost) return;
 
     setIsTesting(true);
@@ -99,6 +105,9 @@ export const MobileConnectModal: React.FC<MobileConnectModalProps> = ({
       sound.playSuccess();
       setTestResult('success');
       onSaveBridgeHost(cleanHost);
+      setTimeout(() => {
+        onClose();
+      }, 1200);
     } else {
       sound.playError();
       setTestResult('error');
@@ -320,14 +329,35 @@ export const MobileConnectModal: React.FC<MobileConnectModalProps> = ({
                 {testResult === 'success' && (
                   <div className="p-2.5 rounded-lg bg-emerald-950/40 border border-emerald-500/50 text-xs text-emerald-300 flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>Đã kết nối thành công tới máy tính!</span>
+                    <span>Đã kết nối thành công! Đang chuyển sang màn hình Terminal...</span>
                   </div>
                 )}
 
                 {testResult === 'error' && (
-                  <div className="p-2.5 rounded-lg bg-rose-950/40 border border-rose-500/50 text-xs text-rose-300 flex items-center gap-2">
-                    <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
-                    <span>Không thể kết nối. Kiểm tra lại địa chỉ hoặc xem daemon máy tính đã chạy chưa.</span>
+                  <div className="p-2.5 rounded-lg bg-rose-950/40 border border-rose-500/50 text-xs text-rose-300 flex flex-col gap-1.5">
+                    <div className="flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+                      <span>Không thể kết nối. Kiểm tra lại địa chỉ hoặc xem daemon máy tính đã chạy chưa.</span>
+                    </div>
+                    {hostInput.trim() && (
+                      <div className="text-[11px] text-amber-300 pl-6">
+                        Mẹo: Bạn có thể bấm nút mở trực tiếp link bên dưới để vào thẳng app mà không lo bị trình duyệt chặn!
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {hostInput.trim() && (
+                  <div className="pt-2 border-t border-slate-800">
+                    <a
+                      href={hostInput.startsWith('http') ? hostInput : `https://${hostInput.trim().replace(/^(https?|wss?):\/\//, '').replace(/\/$/, '')}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 text-xs font-semibold transition-colors w-full justify-center"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      <span>Mở Trực Tiếp Trên Trình Duyệt Bằng Link Này</span>
+                    </a>
                   </div>
                 )}
               </form>
